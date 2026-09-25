@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { halfToFloat, normalizeDepth, toFloat32 } from './normalize';
+import { RangeSmoother, halfToFloat, normalizeDepth, normalizeWithRange, percentileRange, toFloat32 } from './normalize';
 
 describe('normalizeDepth', () => {
   it('maps the range to 0..1', () => {
@@ -43,5 +43,24 @@ describe('half floats', () => {
   it('passes a Float32Array through untouched', () => {
     const a = new Float32Array([1, 2]);
     expect(toFloat32(a)).toBe(a);
+  });
+});
+
+describe('RangeSmoother', () => {
+  it('takes the first range as is, then moves a fraction towards each new one', () => {
+    const s = new RangeSmoother(0.25);
+    expect(s.update({ lo: 0, hi: 10 })).toEqual({ lo: 0, hi: 10 });
+    expect(s.update({ lo: 4, hi: 30 })).toEqual({ lo: 1, hi: 15 });
+  });
+
+  it('keeps a map stable when a bright object briefly widens the range', () => {
+    const s = new RangeSmoother(0.25);
+    const base = Array.from({ length: 100 }, (_, i) => i);
+    const a = normalizeWithRange(base, s.update(percentileRange(base)!));
+    const spiked = [...base.slice(0, 90), ...Array.from({ length: 10 }, () => 1000)];
+    const b = normalizeWithRange(spiked, s.update(percentileRange(spiked)!));
+    const perFrame = normalizeDepth(spiked);
+    // Smoothed: the unchanged middle of the map moves much less than with per-frame normalization.
+    expect(Math.abs(b[50]! - a[50]!)).toBeLessThan(Math.abs(perFrame[50]! - a[50]!));
   });
 });

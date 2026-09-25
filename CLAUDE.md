@@ -17,7 +17,9 @@ Browser hide-and-seek game: creatures hide behind real furniture seen through th
 
 - Design brief (spec section 18): done, see [`docs/design/`](docs/design/). Use its tokens and components in M1.
 - M0 (feasibility on the iPhone): done. Go, depth at 196 px, parallax acceptable until M5. See [`docs/decisions/0001-m0-results.md`](docs/decisions/0001-m0-results.md) for what carries into later milestones.
-- M1 (foundations): built; waiting for the iPhone check. Acceptance: the depth preview runs at M0's fps (about 8 fps at 196 px) and survives an offline reload. See [`docs/decisions/0002-m1-runtime.md`](docs/decisions/0002-m1-runtime.md).
+- M1 (foundations): built, waiting for the iPhone check. Acceptance: the depth preview runs at M0's fps (about 8 fps at 196 px) and survives an offline reload. See [`docs/decisions/0002-m1-runtime.md`](docs/decisions/0002-m1-runtime.md).
+- M2 (occlusion renderer): built before M1's device check, at the owner's request; both are checked on the iPhone together. Acceptance: Pompón behind a sofa edge shows a clean, stable partial silhouette while turning slowly, with flicker under 5% (shown in the lab). See [`docs/decisions/0003-m2-occlusion.md`](docs/decisions/0003-m2-occlusion.md).
+- M3 (pass-and-play): next, once M1 and M2 pass on the iPhone.
 
 ## Commands
 

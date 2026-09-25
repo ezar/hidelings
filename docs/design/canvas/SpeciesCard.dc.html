@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Ficha de especie</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0;font-family:Nunito,system-ui,sans-serif}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; padding: 56px 16px 24px; background: #FFF6E9; color: #2B2140; font-family: Nunito, system-ui, sans-serif; display: flex; flex-direction: column; gap: 14px">
+  <div style="display: flex; align-items: center">
+    <a href="Collection.dc.html" aria-label="Volver a la colección" style="width: 48px; height: 48px; box-sizing: border-box; border-radius: 999px; border: 2px solid #2B2140; background: #FFFFFF; display: flex; align-items: center; justify-content: center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2B2140" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+    </a>
+  </div>
+
+  <div style="height: 250px; border-radius: 28px; background: #FFE3D2; border: 2px solid #2B2140; display: flex; align-items: center; justify-content: center">
+    <dc-import name="Creature" species="fideo" mood="idle" size="230" hint-size="230px,230px"></dc-import>
+  </div>
+
+  <div style="display: flex; align-items: baseline; justify-content: space-between">
+    <h1 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 700; font-size: 40px; line-height: 1">Fideo</h1>
+    <span style="font-size: 14px; font-weight: 800; color: #5A4E6E">Común</span>
+  </div>
+  <p style="margin: 0; font-size: 17px; font-weight: 700; line-height: 1.4">Largo y delgado. Se esconde detrás de patas de mesa y marcos de puerta, y siempre asoma primero un ojo.</p>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+    <div style="padding: 10px 12px; border-radius: 18px; background: #FFFFFF; border: 2px solid #EADCC6">
+      <div style="font-family: Fredoka, sans-serif; font-weight: 700; font-size: 26px">7</div>
+      <div style="font-size: 13px; font-weight: 800; color: #5A4E6E">atrapados</div>
+    </div>
+    <div style="padding: 10px 12px; border-radius: 18px; background: #FFFFFF; border: 2px solid #EADCC6">
+      <div style="font-family: Fredoka, sans-serif; font-weight: 700; font-size: 20px; line-height: 1.6">12 sep</div>
+      <div style="font-size: 13px; font-weight: 800; color: #5A4E6E">primera vez · Salón</div>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 8px; justify-content: space-between">
+    <div style="flex-grow: 1; height: 88px; border-radius: 18px; background: #FFFFFF; border: 2px solid #EADCC6; display: flex; align-items: center; justify-content: center; overflow: hidden"><dc-import name="Creature" species="fideo" mood="peek" size="80" hint-size="80px,80px"></dc-import></div>
+    <div style="flex-grow: 1; height: 88px; border-radius: 18px; background: #FFFFFF; border: 2px solid #EADCC6; display: flex; align-items: center; justify-content: center"><dc-import name="Creature" species="fideo" mood="near" size="80" hint-size="80px,80px"></dc-import></div>
+    <div style="flex-grow: 1; height: 88px; border-radius: 18px; background: #FFEFC2; border: 2px solid #EADCC6; display: flex; align-items: center; justify-content: center"><dc-import name="Creature" species="fideo" mood="caught" size="80" hint-size="80px,80px"></dc-import></div>
+  </div>
+
+  <div style="flex-grow: 1"></div>
+  <button style="min-height: 56px; border-radius: 999px; border: 2px solid #2B2140; background: #FFFFFF; color: #2B2140; font: 800 17px Nunito, sans-serif">Verlo en tu habitación</button>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

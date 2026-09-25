@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Creature</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: {{size}}px; height: {{size}}px; position: relative; font-family: Fredoka, sans-serif; color: #2B2140">
+<svg viewBox="0 0 200 200" width="100%" height="100%" style="display: block; overflow: visible" aria-label="{{label}}" role="img">
+  <defs>
+    <radialGradient id="brilloGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF3B0" stop-opacity="0.9"></stop>
+      <stop offset="100%" stop-color="#FFE06B" stop-opacity="0"></stop>
+    </radialGradient>
+  </defs>
+
+  <sc-if value="{{isBrillo}}" hint-placeholder-val="{{ false }}">
+    <circle cx="100" cy="112" r="98" fill="url(#brilloGlow)"></circle>
+  </sc-if>
+
+  <g transform="{{bodyTransform}}">
+    <sc-if value="{{isPompon}}" hint-placeholder-val="{{ true }}">
+      <path d="{{pomponPath}}" fill="{{color}}" stroke="#2B2140" stroke-width="5" stroke-linejoin="round"></path>
+      <ellipse cx="100" cy="142" rx="34" ry="20" fill="#FFFFFF" fill-opacity="0.35"></ellipse>
+    </sc-if>
+
+    <sc-if value="{{isFideo}}" hint-placeholder-val="{{ false }}">
+      <path d="M100 28 q -6 -16 8 -20 q 10 -2 8 8" fill="none" stroke="#2B2140" stroke-width="5" stroke-linecap="round"></path>
+      <rect x="70" y="28" width="60" height="160" rx="30" fill="{{color}}" stroke="#2B2140" stroke-width="5"></rect>
+      <path d="M84 120 h32 M84 140 h32 M84 160 h32" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="6" stroke-linecap="round"></path>
+      <path d="M72 116 q -22 -4 -28 -24" fill="none" stroke="#2B2140" stroke-width="5" stroke-linecap="round"></path>
+    </sc-if>
+
+    <sc-if value="{{isTimido}}" hint-placeholder-val="{{ false }}">
+      <path d="M80 112 q -16 -26 2 -38 q 12 18 -2 38 z" fill="{{color}}" stroke="#2B2140" stroke-width="5" stroke-linejoin="round"></path>
+      <path d="M120 112 q 16 -26 -2 -38 q -12 18 2 38 z" fill="{{color}}" stroke="#2B2140" stroke-width="5" stroke-linejoin="round"></path>
+      <ellipse cx="100" cy="142" rx="46" ry="38" fill="{{color}}" stroke="#2B2140" stroke-width="5"></ellipse>
+    </sc-if>
+
+    <sc-if value="{{isCurioso}}" hint-placeholder-val="{{ false }}">
+      <g transform="rotate(-6 100 120)">
+        <path d="M100 54 Q 104 32 118 24" fill="none" stroke="#2B2140" stroke-width="5" stroke-linecap="round"></path>
+        <circle cx="120" cy="22" r="9" fill="#FFC53D" stroke="#2B2140" stroke-width="4"></circle>
+        <path d="M100 54 C 140 54 152 100 150 130 C 148 168 124 184 100 184 C 76 184 52 168 50 130 C 48 100 60 54 100 54 Z" fill="{{color}}" stroke="#2B2140" stroke-width="5"></path>
+      </g>
+    </sc-if>
+
+    <sc-if value="{{isDormilon}}" hint-placeholder-val="{{ false }}">
+      <path d="M36 176 C 32 124 62 94 100 94 C 138 94 168 124 164 176 Z" fill="{{color}}" stroke="#2B2140" stroke-width="5" stroke-linejoin="round"></path>
+      <path d="M66 106 C 76 70 110 54 148 62 C 134 76 130 92 132 104 Z" fill="#5B4BDB" stroke="#2B2140" stroke-width="5" stroke-linejoin="round"></path>
+      <circle cx="150" cy="62" r="10" fill="#FFFFFF" stroke="#2B2140" stroke-width="4"></circle>
+    </sc-if>
+
+    <sc-if value="{{isBrillo}}" hint-placeholder-val="{{ false }}">
+      <path d="{{brilloPath}}" fill="{{color}}" stroke="#2B2140" stroke-width="5" stroke-linejoin="round"></path>
+    </sc-if>
+
+    <sc-for list="{{eyes}}" as="e" hint-placeholder-count="2">
+      <ellipse cx="{{e.bx}}" cy="{{e.by}}" rx="9" ry="5" fill="#FF8FB1" fill-opacity="0.75"></ellipse>
+    </sc-for>
+
+    <sc-if value="{{eyesOpen}}" hint-placeholder-val="{{ true }}">
+      <sc-for list="{{eyes}}" as="e" hint-placeholder-count="2">
+        <ellipse cx="{{e.cx}}" cy="{{e.cy}}" rx="{{e.rx}}" ry="{{e.ry}}" fill="#FFFFFF" stroke="#2B2140" stroke-width="4"></ellipse>
+        <circle cx="{{e.px}}" cy="{{e.py}}" r="{{e.pr}}" fill="#2B2140"></circle>
+        <circle cx="{{e.gx}}" cy="{{e.gy}}" r="{{e.gr}}" fill="#FFFFFF"></circle>
+      </sc-for>
+    </sc-if>
+    <sc-if value="{{eyesHappy}}" hint-placeholder-val="{{ false }}">
+      <sc-for list="{{eyes}}" as="e" hint-placeholder-count="2">
+        <path d="{{e.happy}}" fill="none" stroke="#2B2140" stroke-width="5" stroke-linecap="round"></path>
+      </sc-for>
+    </sc-if>
+    <sc-if value="{{eyesClosed}}" hint-placeholder-val="{{ false }}">
+      <sc-for list="{{eyes}}" as="e" hint-placeholder-count="2">
+        <path d="{{e.closed}}" fill="none" stroke="#2B2140" stroke-width="5" stroke-linecap="round"></path>
+      </sc-for>
+    </sc-if>
+
+    <path d="{{mouth.d}}" fill="{{mouth.fill}}" stroke="#2B2140" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+  </g>
+
+  <sc-if value="{{peekH}}" hint-placeholder-val="{{ false }}">
+    <rect x="-12" y="{{edge}}" width="224" height="{{edgeDepth}}" rx="6" fill="#B07F52" stroke="#2B2140" stroke-width="5"></rect>
+    <rect x="-6" y="{{edgeShine}}" width="212" height="6" rx="3" fill="#D2A474"></rect>
+    <ellipse cx="78" cy="{{edge}}" rx="12" ry="8" fill="{{color}}" stroke="#2B2140" stroke-width="4"></ellipse>
+    <ellipse cx="122" cy="{{edge}}" rx="12" ry="8" fill="{{color}}" stroke="#2B2140" stroke-width="4"></ellipse>
+  </sc-if>
+  <sc-if value="{{peekV}}" hint-placeholder-val="{{ false }}">
+    <rect x="124" y="-12" width="90" height="224" rx="6" fill="#EDE5D8" stroke="#2B2140" stroke-width="5"></rect>
+    <ellipse cx="124" cy="96" rx="8" ry="11" fill="{{color}}" stroke="#2B2140" stroke-width="4"></ellipse>
+    <ellipse cx="124" cy="116" rx="8" ry="11" fill="{{color}}" stroke="#2B2140" stroke-width="4"></ellipse>
+  </sc-if>
+
+  <sc-if value="{{showZzz}}" hint-placeholder-val="{{ false }}">
+    <text x="150" y="44" font-family="Fredoka, sans-serif" font-weight="700" font-size="22" fill="#2B2140">z</text>
+    <text x="166" y="26" font-family="Fredoka, sans-serif" font-weight="700" font-size="16" fill="#2B2140">z</text>
+    <text x="178" y="12" font-family="Fredoka, sans-serif" font-weight="700" font-size="12" fill="#2B2140">z</text>
+  </sc-if>
+
+  <sc-if value="{{isNear}}" hint-placeholder-val="{{ false }}">
+    <rect x="164" y="10" width="16" height="32" rx="8" fill="#FFC53D" stroke="#2B2140" stroke-width="4"></rect>
+    <circle cx="172" cy="54" r="7" fill="#FFC53D" stroke="#2B2140" stroke-width="4"></circle>
+  </sc-if>
+
+  <sc-if value="{{isCaught}}" hint-placeholder-val="{{ false }}">
+    <sc-for list="{{sparkles}}" as="s" hint-placeholder-count="5">
+      <path d="{{s.d}}" fill="#FFC53D" stroke="#2B2140" stroke-width="3" stroke-linejoin="round"></path>
+    </sc-for>
+  </sc-if>
+</svg>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"species":{"editor":"enum","options":["pompon","fideo","timido","curioso","dormilon","brillo"],"default":"pompon"},"mood":{"editor":"enum","options":["idle","peek","near","caught"],"default":"idle"},"size":{"editor":"int","min":40,"max":400,"default":200},"tint":{"editor":"color","default":""},"$preview":{"width":200,"height":200}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const SPECIES = {
+      pompon:   { name: 'Pompón',   color: '#7BE0AD', eyes: [[80, 104, 15], [120, 104, 15]], mouth: [100, 134], peek: ['h', 124] },
+      fideo:    { name: 'Fideo',    color: '#FF9F6B', eyes: [[88, 66, 11], [112, 66, 11]],   mouth: [100, 88],  peek: ['v', 124] },
+      timido:   { name: 'Tímido',   color: '#C3A8FF', eyes: [[86, 138, 9], [114, 138, 9]],   mouth: [100, 158], peek: ['h', 152] },
+      curioso:  { name: 'Curioso',  color: '#6CC4FF', eyes: [[80, 108, 17], [121, 110, 13]], mouth: [100, 144], peek: ['h', 130] },
+      dormilon: { name: 'Dormilón', color: '#9EA3F0', eyes: [[78, 132, 11], [122, 132, 11]], mouth: [100, 154], peek: ['h', 148] },
+      brillo:   { name: 'Brillo',   color: '#FFE06B', eyes: [[86, 108, 12], [114, 108, 12]], mouth: [100, 128], peek: ['h', 128] }
+    };
+    const key = SPECIES[this.props.species] ? this.props.species : 'pompon';
+    const sp = SPECIES[key];
+    const mood = this.props.mood ?? 'idle';
+    const size = this.props.size ?? 200;
+    const color = this.props.tint || sp.color;
+
+    const scallop = (cx, cy, r, n, outer, inner) => {
+      const pt = (k, rr) => {
+        const a = (k / n) * Math.PI * 2 - Math.PI / 2;
+        return [(cx + Math.cos(a) * r * rr).toFixed(1), (cy + Math.sin(a) * r * rr).toFixed(1)];
+      };
+      let d = `M${pt(0, inner).join(' ')}`;
+      for (let k = 0; k < n; k++) d += ` Q${pt(k + 0.5, outer).join(' ')} ${pt(k + 1, inner).join(' ')}`;
+      return d + ' Z';
+    };
+
+    const sleepy = key === 'dormilon' && (mood === 'idle' || mood === 'peek');
+    const eyes = sp.eyes.map(([cx, cy, r], i) => {
+      const near = mood === 'near';
+      const rx = near ? r * 1.15 : r;
+      const ry = near ? r * 1.45 : r * 1.15;
+      let ox = r * 0.15, oy = r * 0.05;
+      if (mood === 'peek') { ox = key === 'fideo' ? -r * 0.35 : 0; oy = -r * 0.1; }
+      if (near) { ox = 0; oy = 0; }
+      if (key === 'timido' && mood === 'idle') { ox = -r * 0.2; oy = r * 0.3; }
+      const pr = near ? r * 0.38 : r * 0.56;
+      const side = i === 0 ? -1 : 1;
+      return {
+        cx, cy, rx, ry,
+        px: cx + ox, py: cy + oy, pr,
+        gx: cx + ox + pr * 0.35, gy: cy + oy - pr * 0.4, gr: Math.max(2, pr * 0.3),
+        bx: cx + side * r * 0.45, by: cy + r * 1.45,
+        happy: `M${cx - r} ${cy + 3} Q${cx} ${cy - r * 1.2} ${cx + r} ${cy + 3}`,
+        closed: `M${cx - r} ${cy} Q${cx} ${cy + r * 0.9} ${cx + r} ${cy}`
+      };
+    });
+
+    const [mx, my] = sp.mouth;
+    let mouth;
+    if (mood === 'near') mouth = { d: `M${mx} ${my - 6} a5 6 0 1 0 0.1 0 Z`, fill: '#2B2140' };
+    else if (mood === 'caught') mouth = { d: `M${mx - 12} ${my - 3} Q${mx} ${my + 18} ${mx + 12} ${my - 3} Z`, fill: '#2B2140' };
+    else if (sleepy) mouth = { d: `M${mx - 4} ${my} Q${mx} ${my + 4} ${mx + 4} ${my}`, fill: 'none' };
+    else mouth = { d: `M${mx - 8} ${my} Q${mx} ${my + 8} ${mx + 8} ${my}`, fill: 'none' };
+
+    const star = (x, y, s) => `M${x} ${y - s} Q${x} ${y} ${x + s} ${y} Q${x} ${y} ${x} ${y + s} Q${x} ${y} ${x - s} ${y} Q${x} ${y} ${x} ${y - s} Z`;
+    const [kind, edge] = sp.peek;
+
+    return {
+      size,
+      color,
+      label: `${sp.name}, ${mood}`,
+      isPompon: key === 'pompon',
+      isFideo: key === 'fideo',
+      isTimido: key === 'timido',
+      isCurioso: key === 'curioso',
+      isDormilon: key === 'dormilon',
+      isBrillo: key === 'brillo',
+      pomponPath: scallop(100, 114, 64, 22, 1.08, 0.95),
+      brilloPath: scallop(100, 114, 54, 5, 1.32, 0.86),
+      bodyTransform: mood === 'caught' ? 'translate(100 188) scale(1.12 0.9) translate(-100 -188)' : '',
+      eyes,
+      eyesOpen: !sleepy && mood !== 'caught',
+      eyesHappy: mood === 'caught',
+      eyesClosed: sleepy,
+      mouth,
+      peekH: mood === 'peek' && kind === 'h',
+      peekV: mood === 'peek' && kind === 'v',
+      edge,
+      edgeShine: edge + 7,
+      edgeDepth: 212 - edge,
+      showZzz: sleepy,
+      isNear: mood === 'near',
+      isCaught: mood === 'caught',
+      sparkles: [[26, 52, 11], [176, 70, 13], [168, 168, 9], [30, 160, 10], [100, 14, 8]].map(([x, y, s]) => ({ d: star(x, y, s) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Motion specs</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0;font-family:Nunito,system-ui,sans-serif;color:#2B2140;background:#FFF6E9}
+</style>
+</helmet>
+<div style="width: 1280px; height: 900px; box-sizing: border-box; padding: 56px 64px; background: #FFF6E9; color: #2B2140; font-family: Nunito, system-ui, sans-serif; display: flex; flex-direction: column; gap: 24px">
+  <div style="display: flex; align-items: baseline; justify-content: space-between">
+    <h1 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 700; font-size: 48px; line-height: 1">Motion</h1>
+    <p style="margin: 0; font-size: 15px; font-weight: 700; color: #5A4E6E">Springs for creatures, eases for UI. Reduced motion swaps every move for a short fade.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px">
+    <sc-for list="{{specs}}" as="m" hint-placeholder-count="4">
+      <section style="padding: 20px 22px; border-radius: 28px; background: #FFFFFF; border: 2px solid #2B2140; display: flex; flex-direction: column; gap: 12px; height: 340px; box-sizing: border-box">
+        <div style="display: flex; justify-content: space-between; align-items: baseline">
+          <h2 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 700; font-size: 26px">{{m.title}}</h2>
+          <span style="font-size: 14px; font-weight: 800; color: #5A4E6E">{{m.total}}</span>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center; height: 96px">
+          <sc-for list="{{m.poses}}" as="p" hint-placeholder-count="3">
+            <div style="width: 96px; height: 96px; border-radius: 20px; background: #FFF6E9; display: flex; align-items: center; justify-content: center; overflow: hidden">
+              <dc-import name="Creature" species="{{p.species}}" mood="{{p.mood}}" size="84" hint-size="84px,84px"></dc-import>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; height: 30px; border-radius: 999px; overflow: hidden; border: 2px solid #2B2140">
+          <sc-for list="{{m.steps}}" as="s" hint-placeholder-count="3">
+            <div style="flex-grow: {{s.w}}; flex-basis: 0; background: {{s.bg}}; color: {{s.fg}}; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; border-right: 2px solid #2B2140">{{s.label}}</div>
+          </sc-for>
+        </div>
+        <p style="margin: 0; font-size: 14px; font-weight: 600; line-height: 1.45">{{m.body}}</p>
+        <p style="margin: 0; font-size: 13px; font-weight: 700; color: #5A4E6E">Reduced motion: {{m.reduced}}</p>
+      </section>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const A = { bg: '#FFC53D', fg: '#2B2140' };
+    const B = { bg: '#5B4BDB', fg: '#FFFFFF' };
+    const C = { bg: '#D8F5E6', fg: '#14532D' };
+    const D = { bg: '#ECE9FF', fg: '#2B2140' };
+    return {
+      specs: [
+        {
+          title: 'Tuck-in', total: '900 ms',
+          poses: [{ species: 'pompon', mood: 'idle' }, { species: 'pompon', mood: 'peek' }],
+          steps: [{ ...A, w: 300, label: 'wave 0–300' }, { ...B, w: 400, label: 'squash + slide 300–700' }, { ...C, w: 200, label: 'settle' }],
+          body: 'Appears where tapped, waves twice (arm ±20°). Squashes to 85% height and slides 0.6 r towards the far side of the edge, so the occlusion shader takes it. Settles with one small bob (spring 380 / 22).',
+          reduced: 'fade to hidden in 200 ms.'
+        },
+        {
+          title: 'Nearly found', total: '570 ms',
+          poses: [{ species: 'curioso', mood: 'idle' }, { species: 'curioso', mood: 'near' }],
+          steps: [{ ...D, w: 250, label: 'dwell 250' }, { ...A, w: 120, label: 'eyes' }, { ...B, w: 200, label: '“!” pop 200' }],
+          body: 'Triggers when the creature is over 40% visible and within the central 40% of the screen for 250 ms. Eyes grow 30% with overshoot, “!” pops 0 → 1.1 → 1, a small chirp plays. 4 s cooldown.',
+          reduced: '“!” appears without scaling.'
+        },
+        {
+          title: 'Catch', total: '950 ms',
+          poses: [{ species: 'fideo', mood: 'near' }, { species: 'fideo', mood: 'caught' }],
+          steps: [{ ...A, w: 120, label: 'squash' }, { ...B, w: 140, label: 'stretch' }, { ...A, w: 190, label: 'pop 260–450' }, { ...C, w: 500, label: 'fly to counter 450–950' }],
+          body: 'Squash to 1.25 × 0.75, stretch to 0.85 × 1.2 while rising 0.2 r, pop to 1.4 and fade with 10 radial sparkles. A token then flies along a curve to the counter, which bumps to 1.2. 40 ms haptic where available.',
+          reduced: '200 ms fade, counter number changes.'
+        },
+        {
+          title: 'Handover curtain', total: '500 ms + 600 ms',
+          poses: [{ species: 'timido', mood: 'idle' }, { species: 'timido', mood: 'peek' }],
+          steps: [{ ...B, w: 500, label: 'close 500' }, { ...D, w: 600, label: 'hold to open 600' }, { ...A, w: 600, label: 'lift 600' }],
+          body: 'Two panels close from the sides (ease-out, 60 ms stagger) and the valance sways twice. The seeker holds “Ya lo tengo” for 600 ms (a ring fills), then the curtain lifts upwards and the timer starts on the first camera frame.',
+          reduced: '200 ms crossfade both ways; the hold stays.'
+        }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-09-25T17:30:00Z"
+  },
+  "title": "Hidelings design",
+  "launch": {
+    "view": "canvas"
+  },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 1280,
+      "h": 900,
+      "title": "Tokens"
+    },
+    "Motion.dc.html": {
+      "x": 1360,
+      "y": 0,
+      "w": 1280,
+      "h": 900,
+      "title": "Motion specs"
+    },
+    "Creatures.dc.html": {
+      "x": 0,
+      "y": 1300,
+      "w": 1440,
+      "h": 1900,
+      "title": "Creature sheets"
+    },
+    "Creature.dc.html": {
+      "x": 1520,
+      "y": 1300,
+      "w": 200,
+      "h": 200,
+      "title": "Creature (component)"
+    },
+    "Room.dc.html": {
+      "x": 1800,
+      "y": 1300,
+      "w": 390,
+      "h": 844,
+      "title": "Room, camera stand-in (component)"
+    },
+    "Welcome.dc.html": {
+      "x": 0,
+      "y": 3580,
+      "w": 390,
+      "h": 844,
+      "title": "1 Welcome and permissions"
+    },
+    "Download.dc.html": {
+      "x": 470,
+      "y": 3580,
+      "w": 390,
+      "h": 844,
+      "title": "2 Model download"
+    },
+    "Calibration.dc.html": {
+      "x": 940,
+      "y": 3580,
+      "w": 390,
+      "h": 844,
+      "title": "3 Calibration"
+    },
+    "Hide.dc.html": {
+      "x": 1410,
+      "y": 3580,
+      "w": 390,
+      "h": 844,
+      "title": "4 Hiding phase"
+    },
+    "Handover.dc.html": {
+      "x": 1880,
+      "y": 3580,
+      "w": 390,
+      "h": 844,
+      "title": "5 Handover curtain"
+    },
+    "Seek.dc.html": {
+      "x": 2350,
+      "y": 3580,
+      "w": 390,
+      "h": 844,
+      "title": "6 Seeking phase"
+    },
+    "Results.dc.html": {
+      "x": 2820,
+      "y": 3580,
+      "w": 390,
+      "h": 844,
+      "title": "7 Results"
+    },
+    "Collection.dc.html": {
+      "x": 3290,
+      "y": 3580,
+      "w": 390,
+      "h": 844,
+      "title": "8 Collection"
+    },
+    "SpeciesCard.dc.html": {
+      "x": 3760,
+      "y": 3580,
+      "w": 390,
+      "h": 844,
+      "title": "8b Species card"
+    },
+    "Parent.dc.html": {
+      "x": 4230,
+      "y": 3580,
+      "w": 390,
+      "h": 844,
+      "title": "9 Parent area"
+    },
+    "ParentGate.dc.html": {
+      "x": 0,
+      "y": 4824,
+      "w": 390,
+      "h": 844,
+      "title": "10 Parent gate"
+    },
+    "SoloScan.dc.html": {
+      "x": 470,
+      "y": 4824,
+      "w": 390,
+      "h": 844,
+      "title": "11 Solo room scan"
+    },
+    "SlowDown.dc.html": {
+      "x": 940,
+      "y": 4824,
+      "w": 390,
+      "h": 844,
+      "title": "12 Slow-down warning"
+    },
+    "Pause.dc.html": {
+      "x": 1410,
+      "y": 4824,
+      "w": 390,
+      "h": 844,
+      "title": "13 Pause sheet"
+    },
+    "TimeUp.dc.html": {
+      "x": 1880,
+      "y": 4824,
+      "w": 390,
+      "h": 844,
+      "title": "14 Time is up"
+    },
+    "Landscape.dc.html": {
+      "x": 2350,
+      "y": 4824,
+      "w": 844,
+      "h": 390,
+      "title": "15 Landscape blocker"
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Motion.dc.html",
+    "Creatures.dc.html",
+    "Creature.dc.html",
+    "Room.dc.html",
+    "Welcome.dc.html",
+    "Download.dc.html",
+    "Calibration.dc.html",
+    "Hide.dc.html",
+    "Handover.dc.html",
+    "Seek.dc.html",
+    "Results.dc.html",
+    "Collection.dc.html",
+    "SpeciesCard.dc.html",
+    "Parent.dc.html",
+    "ParentGate.dc.html",
+    "SoloScan.dc.html",
+    "SlowDown.dc.html",
+    "Pause.dc.html",
+    "TimeUp.dc.html",
+    "Landscape.dc.html"
+  ],
+  "notes": {
+    "t1": {
+      "x": 0,
+      "y": -280,
+      "text": "Foundations",
+      "kind": "title1",
+      "maxW": 2640
+    },
+    "t2": {
+      "x": 0,
+      "y": 1040,
+      "text": "Creatures",
+      "kind": "title1",
+      "maxW": 2190
+    },
+    "t3": {
+      "x": 0,
+      "y": 3320,
+      "text": "Key screens",
+      "kind": "title1",
+      "maxW": 4620
+    },
+    "t4": {
+      "x": 0,
+      "y": 4564,
+      "text": "More screens",
+      "kind": "title1",
+      "maxW": 3194
+    }
+  },
+  "designSystems": []
+}

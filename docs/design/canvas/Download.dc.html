@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Descarga de modelos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0;font-family:Nunito,system-ui,sans-serif}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; padding: 72px 24px 32px; background: #FFF6E9; color: #2B2140; font-family: Nunito, system-ui, sans-serif; display: flex; flex-direction: column; gap: 24px">
+  <div style="display: flex; flex-direction: column; gap: 8px; text-align: center">
+    <h1 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 700; font-size: 32px; line-height: 1.1">Despertando a las criaturas…</h1>
+    <p style="margin: 0; font-size: 16px; font-weight: 700; color: #5A4E6E">Solo la primera vez. Luego funciona sin internet.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; align-items: end; height: 250px; padding: 0 4px; border-bottom: 6px solid #B07F52">
+    <div style="display: flex; justify-content: center"><dc-import name="Creature" species="pompon" mood="idle" size="110" hint-size="110px,110px"></dc-import></div>
+    <div style="display: flex; justify-content: center"><dc-import name="Creature" species="fideo" mood="idle" size="120" hint-size="120px,120px"></dc-import></div>
+    <div style="display: flex; justify-content: center"><dc-import name="Creature" species="dormilon" mood="idle" size="110" hint-size="110px,110px"></dc-import></div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <div role="progressbar" aria-valuemin="0" aria-valuemax="48" aria-valuenow="21" aria-label="Descarga de modelos" style="height: 24px; border-radius: 999px; background: #FFFFFF; border: 2px solid #2B2140; overflow: hidden">
+      <div style="width: 44%; height: 100%; background: #FFC53D; border-right: 2px solid #2B2140"></div>
+    </div>
+    <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 800">
+      <span>21 de 48 MB</span>
+      <span style="color: #5A4E6E">Profundidad · 1 de 2</span>
+    </div>
+  </div>
+
+  <div style="padding: 16px; border-radius: 24px; background: #FFFFFF; border: 2px solid #EADCC6; display: flex; flex-direction: column; gap: 6px">
+    <span style="font-family: Fredoka, sans-serif; font-weight: 600; font-size: 18px">Mientras esperas</span>
+    <p style="margin: 0; font-size: 15px; font-weight: 700; line-height: 1.4">Busca una habitación con un sofá, una mesa o una puerta. A las criaturas les encantan los bordes.</p>
+  </div>
+
+  <div style="flex-grow: 1"></div>
+  <p style="margin: 0; text-align: center; font-size: 13px; font-weight: 700; color: #5A4E6E">Mejor con wifi. Puedes borrar los modelos desde la zona de padres.</p>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

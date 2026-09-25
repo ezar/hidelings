@@ -28,6 +28,7 @@ const state = {
   depthMap: null, // { w, h, data, M }
   depthFps: 0,
   oriRate: 0,
+  oriMaxGap: 0,
   hidelings: [],
   seekStart: 0,
   pinching: false,
@@ -121,13 +122,19 @@ async function depthLoop() {
     const M = ori.getMatrix().slice();
     const w = 320;
     const h = Math.round((w * video.videoHeight) / video.videoWidth);
+    const cycleStart = performance.now();
     grab.width = w;
     grab.height = h;
     gctx.drawImage(video, 0, 0, w, h);
     const t = performance.now();
     try {
-      const map = await depth.estimate(gctx.getImageData(0, 0, w, h));
+      const pixels = gctx.getImageData(0, 0, w, h);
+      record('depth.grab', performance.now() - cycleStart, true);
+      const map = await depth.estimate(pixels);
       state.depthMap = { ...map, M };
+      record('depth.prep', map.timings.prep, true);
+      record('depth.model', map.timings.model, true);
+      record('depth.post', map.timings.post, true);
       if (state.showDepth) drawInset(map);
     } catch (e) {
       log(`Depth error: ${e.message}`);
@@ -143,6 +150,7 @@ async function depthLoop() {
       windowStart = performance.now();
     }
     await new Promise(requestAnimationFrame);
+    record('depth.cycle', performance.now() - cycleStart, true);
   }
 }
 
@@ -346,7 +354,7 @@ $('btn-report').addEventListener('click', async () => {
     probe: state.probe,
     depth: { model: depth?.MODEL_ID, dtype: state.dtype, size: state.depthSize, fps: Number(state.depthFps.toFixed(1)) },
     camera: { width: video.videoWidth, height: video.videoHeight, fovDeg: state.fovDeg },
-    orientation: { active: ori.isActive(), eventsPerSecond: state.oriRate },
+    orientation: { active: ori.isActive(), eventsPerSecond: state.oriRate, maxGapMs: Math.round(state.oriMaxGap) },
     hands: state.handsOn,
     creatures: state.hidelings.length,
   });
@@ -381,13 +389,16 @@ function updateHud() {
 
 function updateStats() {
   state.oriRate = ori.takeEventCount();
+  state.oriMaxGap = ori.takeMaxGap();
+  if (ori.isActive()) record('ori.maxGap', state.oriMaxGap, true);
   const landscape = innerWidth > innerHeight;
   if (landscape && state.started) flash('Pon el móvil en vertical', 1200);
   $('stats').textContent = [
     `Profundidad: ${state.depthFps.toFixed(1)} fps, ${median('depth.infer') ?? '-'} ms (${runtime.device}, ${state.dtype ?? '-'}, ${state.depthSize}px)`,
+    `  captura ${median('depth.grab') ?? '-'} · prep ${median('depth.prep') ?? '-'} · modelo ${median('depth.model') ?? '-'} · post ${median('depth.post') ?? '-'} · ciclo ${median('depth.cycle') ?? '-'} ms`,
     `Pintado: ${median('render.frame') ?? '-'} ms por fotograma`,
     `Manos: ${state.handsOn ? `${median('hands.detect') ?? '-'} ms` : 'apagadas'}`,
-    `Giroscopio: ${ori.isActive() ? `${state.oriRate} eventos/s` : 'sin datos'}`,
+    `Giroscopio: ${ori.isActive() ? `${state.oriRate} eventos/s, hueco máx ${Math.round(state.oriMaxGap)} ms` : 'sin datos'}`,
     `Criaturas: ${state.hidelings.filter(h => !h.gone).length}`,
   ].join('\n');
 }

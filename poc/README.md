@@ -30,7 +30,7 @@ On a desktop, any static server on localhost works (`npx serve .`). Without a gy
 
 ## Test protocol
 
-1. On the iPhone, tap Empezar and check in Ajustes whether depth runs on WebGPU and at what fps for each resolution (196, 252, 308).
+1. On the iPhone, tap Empezar and check in Ajustes whether depth runs on WebGPU and at what fps for each resolution (196, 252, 308). The second line splits each depth frame into capture, preprocessing, model (inference and readback), postprocessing and the full loop. The gyroscope line shows events per second and the longest gap between two events; a gap close to the depth time means depth is blocking the main thread.
 2. Turn on the depth preview and point at a sofa, a table and a doorway. Note whether near and far are clearly separated.
 3. Calibrate the field of view: hide a creature at the edge of a doorframe, turn the phone left and right, and adjust the slider until it stays glued to the frame instead of sliding.
 4. Use "Esconder 5" in three rooms. Note how many spots it finds and how many look like believable hiding places.

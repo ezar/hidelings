@@ -8,6 +8,7 @@ import {
   elapsedMs,
   formatClock,
   giveUp,
+  MAX_CREATURES,
   hide,
   newRound,
   pause,
@@ -74,6 +75,10 @@ export function Game() {
   const lastHintSound = useRef(0);
   const forcedHintUntil = useRef(0);
   const frameNo = useRef(0);
+  /** The renderer is rebuilt when the game remounts (after calibration or the lab); repopulate it once. */
+  const populated = useRef(false);
+  /** "Listo" was pressed while some placements were still waiting for their visibility check. */
+  const wantHandover = useRef(false);
 
   const tRef = useRef(t);
   useEffect(() => { tRef.current = t; }, [t]);
@@ -123,7 +128,7 @@ export function Game() {
 
   const place = (dir: Vec3, disp: number, kind: SpotKind | null, insisted: boolean, now: number, auto = false) => {
     const renderer = rendererRef.current;
-    if (!renderer) return;
+    if (!renderer || useRound.getState().round.creatures.length >= MAX_CREATURES) return;
     const species = choice === 'auto' ? speciesForSpot(kind, Math.random()) : choice;
     const up = toWorld(getOrientation(), [0, 1, 0]);
     const c = renderer.addCreature(dir, disp, up, species, now);
@@ -175,6 +180,7 @@ export function Game() {
     const spots = [...spotsRef.current];
     if (!spots.length) { flash(t.hideNoSpots); return; }
     const now = performance.now();
+    n = Math.min(n, MAX_CREATURES - useRound.getState().round.creatures.length);
     // The game obeys the hide rule too: spots where a creature would show too much are dropped.
     spots.slice(0, n).forEach((s, i) => place(s.dir, Math.max(0.02, s.disp - 0.02), s.kind, false, now + i, true));
     spotsRef.current = spots.slice(n);
@@ -239,6 +245,14 @@ export function Game() {
       const pose = getOrientation();
       let r = useRound.getState().round;
 
+      if (!populated.current && v.video.videoWidth) {
+        populated.current = true;
+        for (const c of r.creatures) {
+          if (c.caughtAt === null) renderer.addCreature(c.dir, c.disp, c.up, c.species, now, c.id);
+        }
+        if (r.phase === 'results' && r.outcome === 'timeout') renderer.reveal(r.creatures.map(c => c.id));
+      }
+
       if (r.phase === 'seek' && r.seekStartedAt === null) {
         apply(state => startClock(state, now));
         r = useRound.getState().round;
@@ -274,8 +288,13 @@ export function Game() {
             if (!p.auto) {
               rejected.current = { x: c.screen.x, y: c.screen.y, at: now };
               flash(tRef.current.hideTooVisible, 3500);
+              wantHandover.current = false;
             }
           }
+        }
+        if (wantHandover.current && pending.current.size === 0) {
+          wantHandover.current = false;
+          apply(toHandover);
         }
       }
 
@@ -402,9 +421,10 @@ export function Game() {
 
   // ---------- Transitions ----------
 
+  // Every placement gets its 85% check before the phone changes hands; the frame loop hands over once
+  // the checks are done, unless one of them refused a creature.
   const toCurtain = () => {
-    pending.current.clear();
-    apply(toHandover);
+    wantHandover.current = true;
   };
   const openCurtain = () => {
     nearly.current = new NearlyFoundTracker();

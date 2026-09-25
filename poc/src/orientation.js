@@ -5,6 +5,8 @@ const DEG = Math.PI / 180;
 let matrix = [1, 0, 0, 0, 1, 0, 0, 0, 1];
 let active = false;
 let eventCount = 0;
+let lastEventAt = 0;
+let maxGap = 0; // longest time between two events since the last takeMaxGap, in ms
 
 // Must be called from a user gesture on iOS, before any other await.
 export async function enable() {
@@ -26,6 +28,9 @@ function onEvent(e) {
   matrix = fromEuler(e.alpha, e.beta, e.gamma);
   active = true;
   eventCount++;
+  const now = performance.now();
+  if (lastEventAt) maxGap = Math.max(maxGap, now - lastEventAt);
+  lastEventAt = now;
 }
 
 export const getMatrix = () => matrix;
@@ -34,6 +39,12 @@ export function takeEventCount() {
   const n = eventCount;
   eventCount = 0;
   return n;
+}
+
+export function takeMaxGap() {
+  const g = maxGap;
+  maxGap = 0;
+  return g;
 }
 
 function mul(a, b) {

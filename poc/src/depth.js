@@ -29,14 +29,22 @@ export function setSize(s) {
   if (processor) applySize();
 }
 
+// Returns the normalized map plus a timing breakdown in ms:
+// prep (resize and normalize the input), model (inference and readback), post (fp16 decode and normalization).
 export async function estimate(imageData) {
+  const t0 = performance.now();
   const image = new RawImage(imageData.data, imageData.width, imageData.height, 4).rgb();
   const inputs = await processor(image);
+  const t1 = performance.now();
   const out = await model(inputs);
   const tensor = out.predicted_depth ?? Object.values(out)[0];
+  const raw = tensor.data;
+  const t2 = performance.now();
   const h = tensor.dims.at(-2);
   const w = tensor.dims.at(-1);
-  return { w, h, data: normalize(toFloat32(tensor.data)) };
+  const data = normalize(toFloat32(raw));
+  const t3 = performance.now();
+  return { w, h, data, timings: { prep: t1 - t0, model: t2 - t1, post: t3 - t2 } };
 }
 
 function halfToFloat(h) {

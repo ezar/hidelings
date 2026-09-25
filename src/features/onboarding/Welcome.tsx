@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { DEPTH_MODEL, formatMegabytes, isDepthModelCached } from '../../data/models';
 import { fill } from '../../i18n/strings';
+import type { DepthDtype } from '../../perception/depth/types';
+import { depthConfigFor, probeDevice } from '../../perception/probe/probe';
 import { PomponPeeking } from '../../render/Pompon';
 import { startSession } from '../../app/session';
 import { useSession, useSettings, useT } from '../../app/store';
@@ -9,12 +11,19 @@ export function Welcome() {
   const t = useT();
   const { lang, setLang } = useSettings();
   const { phase, step } = useSession();
-  const [cached, setCached] = useState<boolean | null>(null);
+  const [download, setDownload] = useState<{ cached: boolean; dtype: DepthDtype } | null>(null);
   const starting = phase === 'starting';
 
   useEffect(() => {
-    // Before asking anything, say honestly whether a download is coming (spec 4.1). fp16 is the usual case.
-    isDepthModelCached('fp16').then(setCached, () => setCached(false));
+    // Before asking anything, say honestly whether a download is coming and how big (spec 4.1). The probe
+    // needs no permission, so it can pick the dtype this device will use.
+    let cancelled = false;
+    (async () => {
+      const { dtype } = depthConfigFor(await probeDevice());
+      const cached = await isDepthModelCached(dtype).catch(() => false);
+      if (!cancelled) setDownload({ cached, dtype });
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   const stepText = step ? { motion: t.stepMotion, camera: t.stepCamera, probe: t.stepProbe, benchmark: t.stepBenchmark }[step] : '';
@@ -60,7 +69,7 @@ export function Welcome() {
 
       <div className="grow" />
       <p className="small center">
-        {cached ? t.cachedNote : fill(t.downloadNote, { size: formatMegabytes(DEPTH_MODEL.approxBytes.fp16) })}
+        {download && (download.cached ? t.cachedNote : fill(t.downloadNote, { size: formatMegabytes(DEPTH_MODEL.approxBytes[download.dtype]) }))}
       </p>
       <button className="btn btn-primary btn-big" disabled={starting} onClick={() => void startSession()}>
         {t.start}

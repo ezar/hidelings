@@ -2,7 +2,7 @@
 
 Little creatures that hide behind the real things in your house. Point the phone around the room, spot one peeking out from behind the sofa, and catch it with a tap or a pinch.
 
-- **App**: https://ezar.github.io/hidelings/ (M1: permissions, model download and a depth preview for measuring on the iPhone).
+- **App**: https://ezar.github.io/hidelings/ (M2: calibration and an occlusion lab where Pompón hides behind your furniture).
 - **M0 proof of concept**: https://ezar.github.io/hidelings/poc/
 
 ## Docs
@@ -30,9 +30,9 @@ Camera and motion sensors need HTTPS on a phone. Every push to `main` runs CI an
 ```
 src/
   app/            shell, session start flow, store, report
-  features/       onboarding (welcome, download, errors), debug (depth preview)
-  perception/     depth (worker, engine, normalization), motion (rotation maths, orientation), probe
-  render/         view mapping, 2D creature stand-in
+  features/       onboarding, calibration, lab (occlusion test bench), shared camera stage
+  perception/     depth (worker, engine, normalization, temporal blend), motion (rotation, orientation, calibration), probe
+  render/         Three.js overlay, occlusion shader, Pompón 3D, view mapping
   data/           model catalog and cache
   i18n/           Spanish and English strings
 poc/              M0 proof of concept, unchanged

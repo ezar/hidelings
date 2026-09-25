@@ -2,7 +2,7 @@
 // main thread when the worker cannot reach WebGPU.
 import { AutoModel, AutoProcessor, RawImage, env } from '@huggingface/transformers';
 import { DEPTH_MODEL } from '../../data/models';
-import { normalizeDepth, toFloat32 } from './normalize';
+import { RangeSmoother, normalizeWithRange, percentileRange, toFloat32 } from './normalize';
 import type { DepthConfig, DepthEngine, DepthResult, DepthSize, FramePixels, LoadProgress } from './types';
 
 interface ProgressEvent {
@@ -44,13 +44,16 @@ export async function createDepthEngine(
     dtype: config.dtype,
   });
 
-  const imageProcessor = ((processor as unknown as { image_processor?: ImageProcessorLike }).image_processor ??
-    processor) as ImageProcessorLike;
+  // Depending on the Transformers.js version the resize settings live on `image_processor`,
+  // `feature_extractor` or the processor itself (the PoC handles the same three cases).
+  const wrapped = processor as unknown as { image_processor?: ImageProcessorLike; feature_extractor?: ImageProcessorLike };
+  const imageProcessor = (wrapped.image_processor ?? wrapped.feature_extractor ?? processor) as ImageProcessorLike;
   const setSize = (size: DepthSize) => {
     imageProcessor.size = { width: size, height: size };
     if ('keep_aspect_ratio' in imageProcessor) imageProcessor.keep_aspect_ratio = false;
   };
   setSize(config.size);
+  const smoother = new RangeSmoother();
 
   return {
     setSize,
@@ -63,7 +66,9 @@ export async function createDepthEngine(
       const tensor = out.predicted_depth ?? Object.values(out)[0]!;
       const raw = tensor.data;
       const t2 = performance.now();
-      const data = normalizeDepth(toFloat32(raw));
+      const values = toFloat32(raw);
+      const range = percentileRange(values);
+      const data = range ? normalizeWithRange(values, smoother.update(range)) : new Float32Array(values.length);
       const t3 = performance.now();
       return {
         width: tensor.dims.at(-1)!,

@@ -51,6 +51,21 @@ export const es = {
   settings: 'Ajustes',
   close: 'Cerrar',
   language: 'Idioma',
+  calibTitle: 'Pega a Pompón a la puerta',
+  calibBody: 'Apunta a una puerta o a un mueble con bordes y gira el móvil despacio a un lado y al otro.',
+  calibLeft: 'Izquierda',
+  calibRight: 'Derecha',
+  calibProgress: '{count} medidas · campo de visión {fov}°',
+  calibDone: '¡Listo! Campo de visión {fov}°',
+  calibSave: 'Guardar',
+  calibManual: 'Ajustar a mano',
+  calibSkip: 'Saltar',
+  calibSlider: 'Campo de visión: {fov}°',
+  calibrate: 'Calibrar',
+  labHint: 'Toca justo detrás de un mueble para esconder a Pompón.',
+  labStats: 'Visible {visible} · parpadeo {flicker} ({samples} medidas)',
+  clear: 'Quitar',
+  hide: 'Esconder',
 };
 
 export type Strings = typeof es;
@@ -106,6 +121,21 @@ export const en: Strings = {
   settings: 'Settings',
   close: 'Close',
   language: 'Language',
+  calibTitle: 'Stick Pompón to the door',
+  calibBody: 'Point at a door or a piece of furniture with edges and turn the phone slowly to one side and the other.',
+  calibLeft: 'Left',
+  calibRight: 'Right',
+  calibProgress: '{count} samples · field of view {fov}°',
+  calibDone: 'Done! Field of view {fov}°',
+  calibSave: 'Save',
+  calibManual: 'Adjust by hand',
+  calibSkip: 'Skip',
+  calibSlider: 'Field of view: {fov}°',
+  calibrate: 'Calibrate',
+  labHint: 'Tap just behind a piece of furniture to hide Pompón.',
+  labStats: 'Visible {visible} · flicker {flicker} ({samples} samples)',
+  clear: 'Clear',
+  hide: 'Hide',
 };
 
 export const STRINGS = { es, en };

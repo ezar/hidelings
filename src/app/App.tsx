@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { DepthPreview } from '../features/debug/DepthPreview';
+import { Calibration } from '../features/calibration/Calibration';
+import { Lab } from '../features/lab/Lab';
 import { Download } from '../features/onboarding/Download';
 import { ErrorScreen } from '../features/onboarding/ErrorScreen';
 import { Welcome } from '../features/onboarding/Welcome';
@@ -25,7 +26,8 @@ function LandscapeBlocker() {
 export function App() {
   const phase = useSession(s => s.phase);
   const screen =
-    phase === 'preview' ? <DepthPreview /> :
+    phase === 'lab' ? <Lab /> :
+    phase === 'calibration' ? <Calibration /> :
     phase === 'download' ? <Download /> :
     phase === 'error' ? <ErrorScreen /> :
     <Welcome />;

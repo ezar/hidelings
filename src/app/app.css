@@ -98,3 +98,7 @@ button:focus-visible, select:focus-visible { outline: 3px solid var(--honey); ou
 
 @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 .pompon-bob { animation: bob 2.8s ease-in-out infinite; }
+
+.chip { display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border-radius: var(--radius-pill); border: 2px dashed var(--honey); font-weight: 800; font-size: 15px; }
+.chip[data-done='true'] { background: var(--mint-soft); color: var(--mint-ink); border-color: transparent; }
+.sheet input[type='range'] { width: 100%; accent-color: var(--honey); }

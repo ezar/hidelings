@@ -9,9 +9,10 @@ Every model and asset the project loads or bundles, with its license. The projec
 | MediaPipe Hand Landmarker (float16) | Hand landmarks | Google storage | Apache 2.0 |
 | Transformers.js (`@huggingface/transformers` 3.8) | Model runtime | npm (bundled); the PoC loads it from jsDelivr | Apache 2.0 |
 | ONNX Runtime Web WASM (`ort-wasm-simd-threaded.jsep`) | Inference backend | Copied from Transformers.js into `ort/` at build | MIT |
+| Three.js | 3D creatures and occlusion shader | npm (bundled) | MIT |
 | Fredoka font | Display type and counters | Google Fonts | SIL Open Font License 1.1 |
 | Nunito font | UI and body text (design, from M1) | Google Fonts | SIL Open Font License 1.1 |
-| App icon and Pompón illustration | Icons, onboarding | Original, `public/icon.svg` and `src/render/Pompon.tsx` | MIT (this project) |
+| App icon and Pompón (2D and 3D) | Icons, onboarding, creatures | Original, built in code: `public/icon.svg`, `src/render/Pompon.tsx`, `src/render/pompon3d.ts` | MIT (this project) |
 
 Not allowed: Depth Anything V2 Base and Large (CC-BY-NC 4.0).
 

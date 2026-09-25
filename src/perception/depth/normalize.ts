@@ -1,26 +1,62 @@
-// Turns raw relative inverse depth into 0 (far) .. 1 (near), per frame (spec 7.1).
+// Turns raw relative inverse depth into 0 (far) .. 1 (near) (spec 7.1).
 
-/** Robust per-frame normalization between the given low and high percentiles. */
-export function normalizeDepth(raw: ArrayLike<number>, lowPct = 0.02, highPct = 0.98, maxSamples = 3000): Float32Array {
+export interface DepthRange {
+  lo: number;
+  hi: number;
+}
+
+/** Low and high percentiles of a raw map, sampled for speed. Null when the map has no finite values. */
+export function percentileRange(raw: ArrayLike<number>, lowPct = 0.02, highPct = 0.98, maxSamples = 3000): DepthRange | null {
   const n = raw.length;
-  const out = new Float32Array(n);
-  if (!n) return out;
   const stride = Math.max(1, Math.floor(n / maxSamples));
   const sample: number[] = [];
   for (let i = 0; i < n; i += stride) {
     const v = raw[i]!;
     if (Number.isFinite(v)) sample.push(v);
   }
-  if (!sample.length) return out;
+  if (!sample.length) return null;
   sample.sort((a, b) => a - b);
-  const lo = sample[Math.floor((sample.length - 1) * lowPct)]!;
-  const hi = sample[Math.floor((sample.length - 1) * highPct)]!;
-  const span = hi - lo || 1;
+  return {
+    lo: sample[Math.floor((sample.length - 1) * lowPct)]!,
+    hi: sample[Math.floor((sample.length - 1) * highPct)]!,
+  };
+}
+
+export function normalizeWithRange(raw: ArrayLike<number>, range: DepthRange): Float32Array {
+  const n = raw.length;
+  const out = new Float32Array(n);
+  const span = range.hi - range.lo || 1;
   for (let i = 0; i < n; i++) {
-    const v = (raw[i]! - lo) / span;
+    const v = (raw[i]! - range.lo) / span;
     out[i] = v < 0 || !Number.isFinite(v) ? 0 : v > 1 ? 1 : v;
   }
   return out;
+}
+
+/** Robust per-frame normalization between the given low and high percentiles. */
+export function normalizeDepth(raw: ArrayLike<number>, lowPct = 0.02, highPct = 0.98, maxSamples = 3000): Float32Array {
+  const range = percentileRange(raw, lowPct, highPct, maxSamples);
+  return range ? normalizeWithRange(raw, range) : new Float32Array(raw.length);
+}
+
+/**
+ * Smooths the normalization range over time with an exponential moving average (spec 7.1), so an object
+ * entering the frame does not rescale the whole map from one frame to the next.
+ */
+export class RangeSmoother {
+  private range: DepthRange | null = null;
+
+  constructor(private readonly alpha = 0.25) {}
+
+  update(next: DepthRange): DepthRange {
+    const r = this.range;
+    this.range = r ? { lo: r.lo + (next.lo - r.lo) * this.alpha, hi: r.hi + (next.hi - r.hi) * this.alpha } : { ...next };
+    return this.range;
+  }
+
+  reset() {
+    this.range = null;
+  }
 }
 
 /** IEEE 754 half-precision bits to a number. */

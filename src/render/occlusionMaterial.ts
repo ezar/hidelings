@@ -71,7 +71,9 @@ const fragmentShader = /* glsl */ `
     if (uHasDepth < 0.5) return 0.0;
     vec2 px = vec2(gl_FragCoord.x, uBuffer.y - gl_FragCoord.y);
     vec2 uv = (px - uVideoRect.xy) / uVideoRect.zw + uOffset;
-    if (uv.x < 0.0 || uv.x >= 1.0 || uv.y < 0.0 || uv.y >= 1.0) return 1.0;
+    // Outside the frame the depth map was computed for there is no depth to trust: stay hidden until a
+    // newer map covers this part of the view, rather than popping in unoccluded.
+    if (uv.x < 0.0 || uv.x >= 1.0 || uv.y < 0.0 || uv.y >= 1.0) return 0.0;
     float scene = texture2D(uDepth, uv).r;
     float edge = uDisp + uMargin;
     return 1.0 - smoothstep(edge - uSoft, edge + uSoft, scene);

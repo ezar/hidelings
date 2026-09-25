@@ -57,7 +57,9 @@ function addBody(p: Parts, geo: THREE.BufferGeometry, color: THREE.ColorRepresen
   return body;
 }
 
-const SPHERE = new THREE.SphereGeometry(1, 24, 16);
+/** Shared by every creature; never disposed. Other geometries belong to one creature. */
+export const SHARED_GEOMETRY = new THREE.SphereGeometry(1, 24, 16);
+const SPHERE = SHARED_GEOMETRY;
 
 function addEyes(p: Parts, x: number, y: number, z: number, size: number, look: [number, number] = [0.02, 0]) {
   const white = createCreatureMaterial(p.uniforms, { color: 0xffffff, shade: 0.12 });

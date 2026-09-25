@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Más despacio</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0;font-family:Nunito,system-ui,sans-serif}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #000000; font-family: Nunito, system-ui, sans-serif; color: #2B2140">
+  <div style="position: absolute; left: -14px; top: 0; transform: rotate(-4deg); transform-origin: 50% 50%"><dc-import name="Room" layer="all" hint-size="390px,844px"></dc-import></div>
+  <div style="position: absolute; left: 0; top: 0; width: 390px; height: 844px; background: rgba(30,22,46,.55)"></div>
+
+  <div style="position: absolute; left: 12px; right: 12px; top: 54px; display: flex; align-items: center; justify-content: space-between; opacity: 0.4">
+    <span style="padding: 8px 14px; border-radius: 999px; background: rgba(30,22,46,.74); color: #FFFFFF; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 22px">1:24</span>
+    <span style="padding: 6px 16px; border-radius: 999px; background: #FFC53D; border: 2px solid #2B2140; font-family: Fredoka, sans-serif; font-weight: 700; font-size: 24px">2 / 5</span>
+  </div>
+
+  <div style="position: absolute; left: 32px; right: 32px; top: 270px; padding: 24px 20px; border-radius: 28px; background: #FFC53D; border: 3px solid #2B2140; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center">
+    <dc-import name="Creature" species="timido" mood="near" size="120" hint-size="120px,120px"></dc-import>
+    <h1 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 700; font-size: 34px; line-height: 1">Más despacio</h1>
+    <p style="margin: 0; font-size: 17px; font-weight: 700; line-height: 1.4">Si corres, las criaturas se asustan. Quédate quieto y gira poco a poco.</p>
+  </div>
+
+  <p style="position: absolute; left: 0; right: 0; bottom: 60px; margin: 0; text-align: center; color: #FFFFFF; font-size: 14px; font-weight: 700">Desaparece solo cuando el móvil se calma</p>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

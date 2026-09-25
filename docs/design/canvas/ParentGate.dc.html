@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Acceso a la zona de padres</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0;font-family:Nunito,system-ui,sans-serif}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; padding: 56px 16px 24px; background: #F4F5F7; color: #1F2430; font-family: Nunito, system-ui, sans-serif; display: flex; flex-direction: column; gap: 16px">
+  <div style="display: flex; align-items: center; justify-content: space-between">
+    <h1 style="margin: 0; font-size: 26px; font-weight: 800">Solo para mayores</h1>
+    <button style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CDD6; background: #FFFFFF; color: #3E5BA9; font: 800 15px Nunito, sans-serif">Volver al juego</button>
+  </div>
+  <p style="margin: 0; font-size: 16px; font-weight: 700; line-height: 1.45; color: #5B6272">Dos pasos rápidos para que los peques no cambien los ajustes sin querer.</p>
+
+  <section style="padding: 16px; border-radius: 14px; background: #FFFFFF; border: 1px solid #DDE0E6; display: flex; align-items: center; gap: 16px">
+    <svg width="72" height="72" viewBox="0 0 72 72" aria-hidden="true">
+      <circle cx="36" cy="36" r="30" fill="none" stroke="#E3E6EC" stroke-width="6"></circle>
+      <circle cx="36" cy="36" r="30" fill="none" stroke="#3E5BA9" stroke-width="6" stroke-linecap="round" stroke-dasharray="188.5 188.5" transform="rotate(-90 36 36)"></circle>
+      <path d="M24 37l8 8 16-17" fill="none" stroke="#3E5BA9" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg>
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <span style="font-size: 13px; font-weight: 800; color: #5B6272; letter-spacing: 0.04em">PASO 1 · HECHO</span>
+      <span style="font-size: 17px; font-weight: 800">Mantén pulsado 3 segundos</span>
+    </div>
+  </section>
+
+  <section style="padding: 16px; border-radius: 14px; background: #FFFFFF; border: 2px solid #3E5BA9; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <span style="font-size: 13px; font-weight: 800; color: #5B6272; letter-spacing: 0.04em">PASO 2</span>
+      <span style="font-size: 22px; font-weight: 800">¿Cuánto es 7 + 5?</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+      <sc-for list="{{answers}}" as="a" hint-placeholder-count="4">
+        <button style="min-height: 64px; border-radius: 12px; border: 1px solid #C9CDD6; background: #F4F5F7; color: #1F2430; font: 800 24px Nunito, sans-serif">{{a}}</button>
+      </sc-for>
+    </div>
+    <p style="margin: 0; font-size: 13px; font-weight: 700; color: #5B6272">Si fallas, el paso 1 vuelve a empezar.</p>
+  </section>
+
+  <div style="flex-grow: 1"></div>
+  <p style="margin: 0; text-align: center; font-size: 13px; font-weight: 700; color: #5B6272">Sin cuentas ni contraseñas. La suma cambia cada vez.</p>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return { answers: ['10', '12', '13', '15'] }; }
+}
+</script>
+</body>
+</html>

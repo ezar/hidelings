@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Gira el móvil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0;font-family:Nunito,system-ui,sans-serif}
+</style>
+</helmet>
+<div style="width: 844px; height: 390px; box-sizing: border-box; padding: 32px 64px; background: #FFF6E9; color: #2B2140; font-family: Nunito, system-ui, sans-serif; display: flex; align-items: center; gap: 40px">
+  <svg width="200" height="200" viewBox="0 0 200 200" aria-hidden="true">
+    <rect x="44" y="70" width="112" height="64" rx="12" fill="#FFFFFF" stroke="#D8C8B0" stroke-width="4" stroke-dasharray="8 8"></rect>
+    <rect x="72" y="36" width="56" height="112" rx="12" fill="#FFFFFF" stroke="#2B2140" stroke-width="5"></rect>
+    <rect x="92" y="136" width="16" height="4" rx="2" fill="#2B2140"></rect>
+    <path d="M150 50 A 64 64 0 0 1 166 104" fill="none" stroke="#FFC53D" stroke-width="7" stroke-linecap="round"></path>
+    <path d="M140 46 L152 48 L148 60" fill="none" stroke="#FFC53D" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" transform="rotate(-8 150 50)"></path>
+  </svg>
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 10px">
+    <h1 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 700; font-size: 40px; line-height: 1">Gira el móvil</h1>
+    <p style="margin: 0; font-size: 18px; font-weight: 700; line-height: 1.4; max-width: 340px">Hidelings se juega en vertical. Las criaturas te esperan donde las dejaste.</p>
+  </div>
+  <dc-import name="Creature" species="dormilon" mood="idle" size="150" hint-size="150px,150px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":844,"height":390}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

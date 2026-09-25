@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Se acabó el tiempo</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0;font-family:Nunito,system-ui,sans-serif}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #000000; font-family: Nunito, system-ui, sans-serif; color: #2B2140">
+  <div style="position: absolute; left: 0; top: 0"><dc-import name="Room" layer="all" hint-size="390px,844px"></dc-import></div>
+
+  <span style="position: absolute; left: 234px; top: 330px; width: 108px; height: 108px; border-radius: 999px; border: 4px dashed #FFC53D; box-sizing: border-box"></span>
+  <div style="position: absolute; left: 240px; top: 332px"><dc-import name="Creature" species="curioso" mood="caught" size="96" hint-size="96px,96px"></dc-import></div>
+  <span style="position: absolute; left: 226px; top: 440px; padding: 4px 12px; border-radius: 999px; background: #FFC53D; border: 2px solid #2B2140; font-size: 14px; font-weight: 800">¡Aquí estaba!</span>
+
+  <span style="position: absolute; left: 46px; top: 452px; width: 100px; height: 100px; border-radius: 999px; border: 4px dashed #FFC53D; box-sizing: border-box"></span>
+  <div style="position: absolute; left: 52px; top: 456px"><dc-import name="Creature" species="dormilon" mood="caught" size="88" hint-size="88px,88px"></dc-import></div>
+  <span style="position: absolute; left: 36px; top: 556px; padding: 4px 12px; border-radius: 999px; background: #FFC53D; border: 2px solid #2B2140; font-size: 14px; font-weight: 800">¡Y aquí!</span>
+
+  <div style="position: absolute; left: 12px; right: 12px; top: 54px; padding: 18px; border-radius: 24px; background: #FFF6E9; border: 2px solid #2B2140; display: flex; flex-direction: column; gap: 6px; text-align: center">
+    <h1 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 700; font-size: 32px; line-height: 1.05">¡Se acabó el tiempo!</h1>
+    <p style="margin: 0; font-size: 17px; font-weight: 700">Encontraste 3 de 5. Las otras te saludan desde su escondite.</p>
+  </div>
+
+  <div style="position: absolute; left: 12px; right: 12px; bottom: 28px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+    <button style="min-height: 56px; border-radius: 999px; border: 0; background: rgba(30,22,46,.74); color: #FFFFFF; font: 800 17px Nunito, sans-serif">Otra ronda</button>
+    <button style="min-height: 56px; border-radius: 999px; border: 2px solid #2B2140; background: #FFC53D; color: #2B2140; font: 800 17px Nunito, sans-serif">Ver resultados</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

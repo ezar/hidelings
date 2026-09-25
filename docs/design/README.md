@@ -23,7 +23,8 @@ A picture book about tiny house spirits. Warm paper, deep plum ink, honey for ev
   - `Creatures.dc.html`: creature sheets (six species × idle, peeking, nearly found, caught).
   - `Creature.dc.html`: procedural creature component.
   - `Room.dc.html`: an illustrated room that stands in for the camera, in back and front layers.
-  - Screens: `Welcome`, `Download`, `Calibration`, `Hide`, `Handover`, `Seek`, `Results`, `Collection`, `SpeciesCard`, `Parent`.
+  - Key screens: `Welcome`, `Download`, `Calibration`, `Hide`, `Handover`, `Seek`, `Results`, `Collection`, `SpeciesCard`, `Parent`.
+  - More screens: `ParentGate`, `SoloScan`, `SlowDown`, `Pause`, `TimeUp`, `Landscape`.
 
 ## Assumptions to confirm
 
@@ -32,3 +33,5 @@ A picture book about tiny house spirits. Warm paper, deep plum ink, honey for ev
 - The hider chooses the species with chips in the hiding phase. The spec does not say who chooses.
 - Hold-to-open on the handover curtain, so the hider cannot skip it by accident.
 - Calibration uses Fideo, because it is the species that hides behind door frames.
+- Solo difficulty is a three-step preset (Fácil, Normal, Difícil) rather than three separate controls.
+- When time runs out, uncaught creatures are shown on top of the scene, ignoring occlusion, so the seeker sees where they were.

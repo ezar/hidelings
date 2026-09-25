@@ -40,16 +40,21 @@ Every component the key screens use. Game components sit over the camera or on p
 
 | Component | Notes |
 | --- | --- |
-| ParentGate | Not drawn yet. Hold a button for 3 s, then a simple sum ("7 + 5"). Keeps small children out without an account. |
+| ParentGate | Hold a button for 3 s, then pick the answer to a simple sum ("7 + 5") from four buttons. A wrong answer restarts step 1; the sum changes every time. |
 | SettingsGroup | Uppercase 13 px label over a white rounded list. |
 | StepperRow | Label, minus, value, plus. 40 px buttons, 56 px row. |
 | SwitchRow | Label and a 52 × 32 switch (`aria-pressed`). Accent blue when on. |
 | ActionRow | Label, detail line, one small outline button. |
 | DangerButton | White with red text and red border. Always asks to confirm. |
 
-## Not drawn yet
+## States and interruptions
 
-- Landscape blocker ("Gira el móvil").
-- Solo room scan ("Enséñame la habitación") with a coverage ring.
-- Slow-down warning while walking ("Más despacio").
-- Pause sheet and time-limit end screen (uncaught creatures waving).
+| Component | Where | Notes |
+| --- | --- | --- |
+| CoverageRing | Solo scan | Eight 45° arcs around a compass needle; an arc turns green once that direction has been seen. Sits in the paper card with the instruction. |
+| SpotCounter | Solo scan | Mint pill with the number of hiding spots found so far. |
+| DifficultyPicker | Solo scan | Three-way pill selector (Fácil, Normal, Difícil) with a one-line summary of what it changes. |
+| SlowDownCard | Seek, Solo | Honey card with a startled Tímido. Camera dims to 55% and the HUD to 40% opacity. Clears by itself once the gyroscope settles for 1.5 s. |
+| PauseSheet | Seek | Paper bottom sheet over a 60% veil: continue, hint, sound and hands switches, restart, exit. |
+| TimeUpReveal | Seek | Uncaught creatures drawn on top of the scene (no occlusion) with a dashed honey ring and a "¡Aquí estaba!" label, happy pose. |
+| LandscapeBlocker | Anywhere | Paper screen in landscape: rotating phone icon, message, sleeping Dormilón. The session keeps its state. |

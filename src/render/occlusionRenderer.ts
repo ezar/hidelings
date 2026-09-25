@@ -5,7 +5,9 @@ import * as THREE from 'three';
 import type { PosedDepthMap } from '../perception/depth/temporal';
 import { cameraTans, project, toDevice, type CameraTans, type Mat3, type Vec3 } from '../perception/motion/rotation';
 import { createCreatureUniforms, type CreatureUniforms } from './occlusionMaterial';
-import { animateCreature, createPompon, type CreatureRig } from './pompon3d';
+import type { SpeciesId } from '../engine/species';
+import { SPECIES } from '../engine/species';
+import { animateCreature, createCreature, setMood, type CreatureRig, type Mood } from './creatures3d';
 import { coverMapping, type ViewMapping } from './viewMapping';
 
 /** Creatures live on a sphere around the player; 3DoF has no metric distance. */
@@ -14,6 +16,7 @@ const VIS_WIDTH = 48;
 
 export interface Creature {
   id: number;
+  species: SpeciesId;
   dir: Vec3;
   disp: number;
   anchor: THREE.Group;
@@ -64,6 +67,9 @@ export class OcclusionRenderer {
   private cssHeight = 1;
   private pixelRatio = 1;
   private occlusion = true;
+  private video: HTMLVideoElement | null = null;
+  private stillRequests: { id: number; done: (dataUrl: string | null) => void }[] = [];
+  private reducedMotion = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, premultipliedAlpha: false });
@@ -123,7 +129,7 @@ export class OcclusionRenderer {
    * Anchors a creature in a world direction. `up` is the phone's up direction in the world when it was
    * placed, so the creature faces the player upright however the phone was held.
    */
-  addCreature(dir: Vec3, disp: number, up: Vec3 = [0, 0, 1]): Creature {
+  addCreature(dir: Vec3, disp: number, up: Vec3 = [0, 0, 1], species: SpeciesId = 'pompon', now = performance.now(), id?: number): Creature {
     const uniforms = createCreatureUniforms();
     uniforms.uDisp.value = disp;
     uniforms.uOcclusion.value = this.occlusion ? 1 : 0;
@@ -131,18 +137,40 @@ export class OcclusionRenderer {
       uniforms.uDepth.value = this.depthTexture;
       uniforms.uHasDepth.value = 1;
     }
-    const rig = createPompon(uniforms);
+    const rig = createCreature(species, uniforms, now);
     const anchor = new THREE.Group();
     anchor.up.set(up[0], up[1], up[2]);
     const len = Math.hypot(dir[0], dir[1], dir[2]) || 1;
     anchor.position.set((dir[0] / len) * ANCHOR_DISTANCE, (dir[1] / len) * ANCHOR_DISTANCE, (dir[2] / len) * ANCHOR_DISTANCE);
     anchor.lookAt(0, 0, 0);
-    anchor.scale.setScalar(creatureRadius(disp, this.tans));
+    anchor.scale.setScalar(creatureRadius(disp, this.tans) * SPECIES[species].size);
     anchor.add(rig.group);
     this.scene.add(anchor);
-    const creature: Creature = { id: this.nextId++, dir, disp, anchor, rig, uniforms, visible: null, measurements: 0, screen: null };
+    const creatureId = id ?? this.nextId++;
+    this.nextId = Math.max(this.nextId, creatureId + 1);
+    const creature: Creature = { id: creatureId, species, dir, disp, anchor, rig, uniforms, visible: null, measurements: 0, screen: null };
     this.creatures.push(creature);
     return creature;
+  }
+
+  setMood(id: number, mood: Mood, now = performance.now()) {
+    const c = this.creatures.find(x => x.id === id);
+    if (c) setMood(c.rig, mood, now);
+  }
+
+  /** Time up (spec 5): the uncaught creatures show themselves whole. */
+  reveal(ids: readonly number[]) {
+    for (const c of this.creatures) if (ids.includes(c.id)) c.uniforms.uOcclusion.value = 0;
+  }
+
+  /** The video element, used to compose catch stills. */
+  setVideo(video: HTMLVideoElement | null) {
+    this.video = video;
+  }
+
+  /** Asks for a still of the camera and the creatures around one creature, taken right after the next frame. */
+  requestStill(id: number, done: (dataUrl: string | null) => void) {
+    this.stillRequests.push({ id, done });
   }
 
   removeCreature(id: number) {
@@ -171,7 +199,7 @@ export class OcclusionRenderer {
     const bufferH = this.cssHeight * this.pixelRatio;
 
     for (const c of this.creatures) {
-      animateCreature(c.rig, timeMs);
+      c.uniforms.uFade.value = animateCreature(c.rig, timeMs, this.reducedMotion);
       const p = project(toDevice(pose, c.dir), this.tans);
       const dp = this.depthPose ? project(toDevice(this.depthPose, c.dir), this.tans) : null;
       c.uniforms.uOffset.value.set(p && dp ? dp.u - p.u : 0, p && dp ? dp.v - p.v : 0);
@@ -187,7 +215,39 @@ export class OcclusionRenderer {
 
     this.renderer.setRenderTarget(null);
     this.renderer.render(this.scene, this.camera);
+    // The WebGL canvas is only readable in the same task as the render, so stills are taken here.
+    if (this.stillRequests.length) this.takeStills();
     this.measureNext();
+  }
+
+  private takeStills() {
+    const requests = this.stillRequests;
+    this.stillRequests = [];
+    for (const r of requests) {
+      const c = this.creatures.find(x => x.id === r.id);
+      r.done(c?.screen && this.video ? this.composeStill(c.screen) : null);
+    }
+  }
+
+  private composeStill(at: { x: number; y: number; r: number }): string | null {
+    const video = this.video!;
+    const size = 240;
+    const half = Math.max(at.r * 2.2, 60);
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    if (!ctx || !video.videoWidth) return null;
+    const scale = size / (half * 2);
+    // Camera frame, cropped like object-fit: cover, then the creatures on top.
+    ctx.setTransform(scale, 0, 0, scale, -(at.x - half) * scale, -(at.y - half) * scale);
+    ctx.drawImage(video, this.view.offsetX, this.view.offsetY, this.view.videoWidth, this.view.videoHeight);
+    ctx.drawImage(this.renderer.domElement, 0, 0, this.cssWidth, this.cssHeight);
+    try {
+      return canvas.toDataURL('image/jpeg', 0.8);
+    } catch {
+      return null;
+    }
   }
 
   private setBufferUniforms(u: CreatureUniforms, bufferW: number, bufferH: number, scale: number) {

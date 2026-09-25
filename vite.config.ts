@@ -7,25 +7,40 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 const BASE = '/hidelings/';
 
-// ONNX Runtime WASM files are served from our own origin (not a CDN) so the service worker
-// can precache them and the depth model keeps working offline.
-const ORT_DIR = fileURLToPath(new URL('./node_modules/@huggingface/transformers/dist/', import.meta.url));
-const ORT_FILES = ['ort-wasm-simd-threaded.jsep.mjs', 'ort-wasm-simd-threaded.jsep.wasm'];
+// Runtime files served from our own origin (not a CDN), so the service worker can cache them and the
+// models keep working offline: ONNX Runtime for depth (precached) and MediaPipe for hands (cached on use).
+const COPIES: { from: string; to: string; files: string[] }[] = [
+  {
+    from: fileURLToPath(new URL('./node_modules/@huggingface/transformers/dist/', import.meta.url)),
+    to: 'ort/',
+    files: ['ort-wasm-simd-threaded.jsep.mjs', 'ort-wasm-simd-threaded.jsep.wasm'],
+  },
+  {
+    from: fileURLToPath(new URL('./node_modules/@mediapipe/tasks-vision/wasm/', import.meta.url)),
+    to: 'mediapipe/',
+    files: ['vision_wasm_internal.js', 'vision_wasm_internal.wasm', 'vision_wasm_nosimd_internal.js', 'vision_wasm_nosimd_internal.wasm'],
+  },
+];
 
-function onnxRuntimeFiles(): Plugin {
+function runtimeFiles(): Plugin {
   return {
-    name: 'hidelings-onnx-runtime-files',
+    name: 'hidelings-runtime-files',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
-        const name = req.url?.split('?')[0]?.replace(`${BASE}ort/`, '');
-        if (!name || !ORT_FILES.includes(name)) return next();
-        res.setHeader('Content-Type', name.endsWith('.wasm') ? 'application/wasm' : 'text/javascript');
-        createReadStream(ORT_DIR + name).pipe(res);
+        const path = req.url?.split('?')[0] ?? '';
+        for (const c of COPIES) {
+          const name = path.replace(`${BASE}${c.to}`, '');
+          if (name === path || !c.files.includes(name)) continue;
+          res.setHeader('Content-Type', name.endsWith('.wasm') ? 'application/wasm' : 'text/javascript');
+          createReadStream(c.from + name).pipe(res);
+          return;
+        }
+        next();
       });
     },
     generateBundle() {
-      for (const name of ORT_FILES) {
-        this.emitFile({ type: 'asset', fileName: `ort/${name}`, source: readFileSync(ORT_DIR + name) });
+      for (const c of COPIES) {
+        for (const name of c.files) this.emitFile({ type: 'asset', fileName: c.to + name, source: readFileSync(c.from + name) });
       }
     },
   };
@@ -35,7 +50,7 @@ export default defineConfig({
   base: BASE,
   plugins: [
     react(),
-    onnxRuntimeFiles(),
+    runtimeFiles(),
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: false,
@@ -60,10 +75,16 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,mjs,css,html,svg,png,wasm,woff2}'],
         // Vite also emits a hashed copy of the ORT wasm; the app loads the one under ort/.
-        globIgnores: ['poc/**', 'assets/*.wasm'],
+        globIgnores: ['poc/**', 'assets/*.wasm', 'mediapipe/**'],
         maximumFileSizeToCacheInBytes: 32 * 1024 * 1024,
         navigateFallbackDenylist: [/\/poc\//],
         runtimeCaching: [
+          {
+            // MediaPipe hands: our WASM copy and Google's model file, cached the first time hands are used.
+            urlPattern: ({ url }) => url.pathname.startsWith(`${BASE}mediapipe/`) || url.href.startsWith('https://storage.googleapis.com/mediapipe-models/'),
+            handler: 'CacheFirst',
+            options: { cacheName: 'hands', expiration: { maxEntries: 10 } },
+          },
           {
             urlPattern: ({ url }) => url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com',
             handler: 'CacheFirst',

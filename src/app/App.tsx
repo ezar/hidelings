@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { Calibration } from '../features/calibration/Calibration';
+import { Game } from '../features/game/Game';
 import { Lab } from '../features/lab/Lab';
 import { Download } from '../features/onboarding/Download';
 import { ErrorScreen } from '../features/onboarding/ErrorScreen';
@@ -26,6 +27,7 @@ function LandscapeBlocker() {
 export function App() {
   const phase = useSession(s => s.phase);
   const screen =
+    phase === 'game' ? <Game /> :
     phase === 'lab' ? <Lab /> :
     phase === 'calibration' ? <Calibration /> :
     phase === 'download' ? <Download /> :

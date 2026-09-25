@@ -40,11 +40,12 @@ export function depthConfigFor(probe: DeviceProbe, size: DepthSize = 196, mock =
 }
 
 /**
- * First-launch benchmark (spec 7.1): 252 px costs about (252/196)² ≈ 1.65 times the model time at 196,
- * so only pick it when 196 leaves room to stay at 8 fps or more.
+ * First-launch benchmark (spec 7.1). On the M0 iPhone 252 px took about 2.5 times the model time of 196 px
+ * (248 vs 97 ms), far more than the pixel ratio suggests, so only pick 252 when 196 is fast enough for
+ * 252 to still reach 8 fps.
  */
 export function chooseDepthSize(modelMsAt196: number): DepthSize {
-  return modelMsAt196 > 0 && modelMsAt196 * 1.65 + 20 <= 125 ? 252 : 196;
+  return modelMsAt196 > 0 && modelMsAt196 * 2.5 + 20 <= 125 ? 252 : 196;
 }
 
 export function median(values: readonly number[]): number {

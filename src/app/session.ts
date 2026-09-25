@@ -1,4 +1,5 @@
 // The "Empezar" flow (spec 4.1): motion permission, camera, device probe, model download, benchmark.
+import { unlockAudio } from '../audio/audio';
 import { isDepthModelCached, migrateModelCache, requestPersistentStorage } from '../data/models';
 import { DepthService } from '../perception/depth/depthService';
 import { grabFrame } from '../perception/depth/grab';
@@ -17,6 +18,8 @@ export async function startSession(): Promise<void> {
   const session = useSession.getState();
   session.set({ phase: 'starting', step: 'motion', error: null, errorDetail: '', progress: null });
 
+  // Synchronous: audio must be unlocked inside the tap, and the motion request below stays the first await.
+  unlockAudio();
   const motion = await enableOrientation();
   log(`Orientation: ${motion ? 'enabled' : 'unavailable'}`);
   session.set({ motion, step: 'camera' });
@@ -69,7 +72,7 @@ export async function startSession(): Promise<void> {
   }
 
   void requestPersistentStorage();
-  session.set({ phase: useSettings.getState().calibrated ? 'lab' : 'calibration', step: null });
+  session.set({ phase: useSettings.getState().calibrated ? 'game' : 'calibration', step: null });
 }
 
 /** Times the model at 196 px on real camera frames and picks the size (spec 7.1). */

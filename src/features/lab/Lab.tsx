@@ -4,8 +4,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { deleteModels } from '../../data/models';
 import { fill } from '../../i18n/strings';
-import { grabFrame } from '../../perception/depth/grab';
-import { FlickerMeter, blendWithPrevious, type PosedDepthMap } from '../../perception/depth/temporal';
+import { FlickerMeter, type PosedDepthMap } from '../../perception/depth/temporal';
 import { DEPTH_SIZES, type DepthSize } from '../../perception/depth/types';
 import { getOrientation, isOrientationActive, takeOrientationStats } from '../../perception/motion/orientation';
 import { angleBetween, cameraTans, project, ray, toDevice, toWorld, type Vec3 } from '../../perception/motion/rotation';
@@ -13,6 +12,7 @@ import { coverMapping, screenToVideo } from '../../render/viewMapping';
 import { buildReport, log, medianOf, record } from '../../app/report';
 import { live } from '../../app/session';
 import { useSession, useSettings, useT } from '../../app/store';
+import { useDepthLoop } from '../stage/useDepthLoop';
 import { useStage } from '../stage/useStage';
 
 const MAX_CREATURES = 5;
@@ -26,7 +26,6 @@ export function Lab() {
   const glRef = useRef<HTMLCanvasElement>(null);
   const depthCanvasRef = useRef<HTMLCanvasElement>(null);
   const { rendererRef, syncView } = useStage(videoRef, glRef);
-  const mapRef = useRef<PosedDepthMap | null>(null);
   const flicker = useRef(new FlickerMeter());
   const markRef = useRef<{ dir: Vec3; at: number } | null>(null);
   const [showDepth, setShowDepth] = useState(false);
@@ -36,59 +35,12 @@ export function Lab() {
   const [hasMark, setHasMark] = useState(false);
   const [note, setNote] = useState('');
   const [toast, setToast] = useState('');
-  const [stats, setStats] = useState({ fps: 0, gyroEvents: 0, gyroGap: 0, visible: null as number | null, flicker: 0, samples: 0 });
+  const [stats, setStats] = useState({ gyroEvents: 0, gyroGap: 0, visible: null as number | null, flicker: 0, samples: 0 });
 
   useEffect(() => { showDepthRef.current = showDepth; }, [showDepth]);
-
-  // Depth loop: grab with the pose, estimate, blend with the previous map, hand to the renderer.
-  useEffect(() => {
-    let running = true;
-    let frames = 0;
-    let windowStart = performance.now();
-    (async () => {
-      while (running) {
-        const video = videoRef.current;
-        const cycleStart = performance.now();
-        const pose = getOrientation();
-        const frame = video ? grabFrame(video) : null;
-        if (!frame || !live.depth || !video) {
-          await new Promise(r => setTimeout(r, 50));
-          continue;
-        }
-        record('depth.grab', performance.now() - cycleStart);
-        const t0 = performance.now();
-        try {
-          const result = await live.depth.estimate(frame);
-          record('depth.prep', result.timings.prep);
-          record('depth.model', result.timings.model);
-          record('depth.post', result.timings.post);
-          const t1 = performance.now();
-          const tans = cameraTans(useSettings.getState().fovDeg, video.videoWidth, video.videoHeight);
-          const posed = blendWithPrevious(mapRef.current, { ...result, pose }, tans);
-          record('depth.blend', performance.now() - t1);
-          mapRef.current = posed;
-          rendererRef.current?.setDepth(posed);
-          if (showDepthRef.current) paintDepth(depthCanvasRef.current, posed, video.videoWidth, video.videoHeight);
-        } catch (e) {
-          if (!running) break;
-          log(`Depth error: ${String(e)}`);
-          await new Promise(r => setTimeout(r, 500));
-          continue;
-        }
-        record('depth.infer', performance.now() - t0);
-        record('depth.cycle', performance.now() - cycleStart);
-        frames++;
-        const elapsed = performance.now() - windowStart;
-        if (elapsed >= 1000) {
-          const fps = (frames * 1000) / elapsed;
-          frames = 0;
-          windowStart = performance.now();
-          setStats(s => ({ ...s, fps }));
-        }
-      }
-    })();
-    return () => { running = false; };
-  }, [rendererRef]);
+  const { mapRef, fps } = useDepthLoop(videoRef, rendererRef, (map, video) => {
+    if (showDepthRef.current) paintDepth(depthCanvasRef.current, map, video.videoWidth, video.videoHeight);
+  });
 
   // Render loop, visibility and flicker.
   useEffect(() => {
@@ -186,7 +138,7 @@ export function Lab() {
     const video = videoRef.current;
     const report = buildReport({
       probe,
-      depth: { ...config, host, fps: Number(stats.fps.toFixed(1)) },
+      depth: { ...config, host, fps: Number(fps.toFixed(1)) },
       camera: { width: video?.videoWidth, height: video?.videoHeight, fovDeg, calibrated: useSettings.getState().calibrated },
       orientation: { active: isOrientationActive(), eventsPerSecond: stats.gyroEvents, maxGapMs: Math.round(stats.gyroGap) },
       occlusion: {
@@ -218,7 +170,7 @@ export function Lab() {
 
       <div className="hud-top">
         <div className="pill mono">
-          {`${t.depthFps}: ${stats.fps.toFixed(1)} fps · ${config?.size ?? '-'} px · ${config?.device ?? '-'} ${config?.dtype ?? ''} · ${host ? t.host[host] : '-'}\n`}
+          {`${t.depthFps}: ${fps.toFixed(1)} fps · ${config?.size ?? '-'} px · ${config?.device ?? '-'} ${config?.dtype ?? ''} · ${host ? t.host[host] : '-'}\n`}
           {fill(t.breakdown, { grab: m('depth.grab'), prep: m('depth.prep'), model: m('depth.model'), post: m('depth.post'), cycle: m('depth.cycle') })}
           {`\n${t.gyro}: `}
           {isOrientationActive() ? fill(t.gyroValue, { events: stats.gyroEvents, gap: Math.round(stats.gyroGap) }) : t.gyroNone}

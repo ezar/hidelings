@@ -92,12 +92,12 @@ export function Calibration() {
   const save = () => {
     setFov(fov, true);
     log(`Calibration: ${fov}° (${manual ? 'manual' : `${progress.count} samples`})`);
-    setPhase({ phase: 'lab' });
+    setPhase({ phase: 'game' });
   };
   const skip = () => {
     setFov(fovDeg, true);
     log('Calibration skipped');
-    setPhase({ phase: 'lab' });
+    setPhase({ phase: 'game' });
   };
 
   const chip = (done: boolean, label: string) => (

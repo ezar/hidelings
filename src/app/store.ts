@@ -5,7 +5,7 @@ import type { DepthConfig, DepthSize, LoadProgress } from '../perception/depth/t
 import type { DepthHost } from '../perception/depth/depthService';
 import type { DeviceProbe } from '../perception/probe/probe';
 
-export type Phase = 'welcome' | 'starting' | 'download' | 'calibration' | 'lab' | 'error';
+export type Phase = 'welcome' | 'starting' | 'download' | 'calibration' | 'game' | 'lab' | 'error';
 export type StartStep = 'motion' | 'camera' | 'probe' | 'benchmark';
 
 /** Settings kept on the device between sessions. */
@@ -16,6 +16,9 @@ interface Settings {
   fovDeg: number;
   /** Whether this device went through the field-of-view calibration (spec 8.3). */
   calibrated: boolean;
+  /** Catch by pinching in front of the camera (spec 7.3). */
+  hands: boolean;
+  setHands: (hands: boolean) => void;
   setLang: (lang: Lang) => void;
   setDepthSize: (size: DepthSize) => void;
   setFov: (fovDeg: number, calibrated: boolean) => void;
@@ -28,6 +31,8 @@ export const useSettings = create<Settings>()(
       depthSize: null,
       fovDeg: 64,
       calibrated: false,
+      hands: false,
+      setHands: hands => set({ hands }),
       setLang: lang => set({ lang }),
       setDepthSize: depthSize => set({ depthSize }),
       setFov: (fovDeg, calibrated) => set({ fovDeg, calibrated }),
@@ -35,7 +40,7 @@ export const useSettings = create<Settings>()(
     {
       name: 'hidelings.settings',
       storage: createJSONStorage(() => localStorage),
-      partialize: s => ({ lang: s.lang, depthSize: s.depthSize, fovDeg: s.fovDeg, calibrated: s.calibrated }),
+      partialize: s => ({ lang: s.lang, depthSize: s.depthSize, fovDeg: s.fovDeg, calibrated: s.calibrated, hands: s.hands }),
     },
   ),
 );

@@ -22,8 +22,11 @@ describe('chooseDepthSize', () => {
   it('keeps 196 on the M0 iPhone (97 ms at 196)', () => {
     expect(chooseDepthSize(97)).toBe(196);
   });
+  it('keeps 196 on the M1 iPhone benchmark (62 ms at 196, which picked 252 before)', () => {
+    expect(chooseDepthSize(62)).toBe(196);
+  });
   it('picks 252 on a device fast enough to hold 8 fps there', () => {
-    expect(chooseDepthSize(50)).toBe(252);
+    expect(chooseDepthSize(35)).toBe(252);
   });
   it('keeps 196 without a measurement', () => {
     expect(chooseDepthSize(0)).toBe(196);

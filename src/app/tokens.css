@@ -1,0 +1,38 @@
+/* Design tokens from docs/design/tokens.json. */
+:root {
+  --ink: #2b2140;
+  --ink-soft: #5a4e6e;
+  --paper: #fff6e9;
+  --card: #ffffff;
+  --line: #eadcc6;
+  --honey: #ffc53d;
+  --berry: #5b4bdb;
+  --berry-soft: #ece9ff;
+  --mint-soft: #d8f5e6;
+  --mint-ink: #14532d;
+  --glass: rgba(30, 22, 46, 0.74);
+  --wood: #b07f52;
+  --species-pompon: #7be0ad;
+  --blush: #ff8fb1;
+
+  --font-display: 'Fredoka', system-ui, sans-serif;
+  --font-body: 'Nunito', system-ui, sans-serif;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 28px;
+  --radius-pill: 999px;
+
+  --touch: 56px;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  color-scheme: light;
+}

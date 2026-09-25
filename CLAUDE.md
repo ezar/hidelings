@@ -17,4 +17,9 @@ Browser hide-and-seek game: creatures hide behind real furniture seen through th
 
 - Design brief (spec section 18): done, see [`docs/design/`](docs/design/). Use its tokens and components in M1.
 - M0 (feasibility on the iPhone): done. Go, depth at 196 px, parallax acceptable until M5. See [`docs/decisions/0001-m0-results.md`](docs/decisions/0001-m0-results.md) for what carries into later milestones.
-- M1 (foundations): next.
+- M1 (foundations): built; waiting for the iPhone check. Acceptance: the depth preview runs at M0's fps (about 8 fps at 196 px) and survives an offline reload. See [`docs/decisions/0002-m1-runtime.md`](docs/decisions/0002-m1-runtime.md).
+
+## Commands
+
+- `npm run check`: typecheck, lint and unit tests. Run before every push.
+- `npm run dev`, then open `/hidelings/?mock` to work without the depth model.

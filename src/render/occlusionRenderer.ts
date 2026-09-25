@@ -7,7 +7,7 @@ import { cameraTans, project, toDevice, type CameraTans, type Mat3, type Vec3 } 
 import { createCreatureUniforms, type CreatureUniforms } from './occlusionMaterial';
 import type { SpeciesId } from '../engine/species';
 import { SPECIES } from '../engine/species';
-import { animateCreature, createCreature, setMood, type CreatureRig, type Mood } from './creatures3d';
+import { SHARED_GEOMETRY, animateCreature, createCreature, setMood, type CreatureRig, type Mood } from './creatures3d';
 import { coverMapping, type ViewMapping } from './viewMapping';
 
 /** Creatures live on a sphere around the player; 3DoF has no metric distance. */
@@ -177,9 +177,14 @@ export class OcclusionRenderer {
     const c = this.creatures.find(x => x.id === id);
     if (!c) return;
     this.scene.remove(c.anchor);
+    // Free the GPU buffers too: each creature builds its own body geometries (the small sphere is shared).
+    const geometries = new Set<THREE.BufferGeometry>();
     c.anchor.traverse(o => {
-      if (o instanceof THREE.Mesh) (o.material as THREE.Material).dispose();
+      if (!(o instanceof THREE.Mesh)) return;
+      (o.material as THREE.Material).dispose();
+      if (o.geometry !== SHARED_GEOMETRY) geometries.add(o.geometry);
     });
+    for (const g of geometries) g.dispose();
     this.creatures = this.creatures.filter(x => x.id !== id);
   }
 

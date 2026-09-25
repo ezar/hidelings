@@ -16,4 +16,5 @@ Browser hide-and-seek game: creatures hide behind real furniture seen through th
 ## Status
 
 - Design brief (spec section 18): done, see [`docs/design/`](docs/design/). Use its tokens and components in M1.
-- M0 (feasibility on the iPhone): PoC in `poc/`, waiting for device measurements. Acceptance: `docs/decisions/0001-m0-results.md` with a go or no-go, the chosen depth resolution and the verdict on parallax.
+- M0 (feasibility on the iPhone): done. Go, depth at 196 px, parallax acceptable until M5. See [`docs/decisions/0001-m0-results.md`](docs/decisions/0001-m0-results.md) for what carries into later milestones.
+- M1 (foundations): next.

@@ -8,7 +8,8 @@ Every model and asset the project loads or bundles, with its license. The projec
 | MediaPipe Tasks Vision (`@mediapipe/tasks-vision`) | Hand tracking runtime | jsDelivr | Apache 2.0 |
 | MediaPipe Hand Landmarker (float16) | Hand landmarks | Google storage | Apache 2.0 |
 | Transformers.js (`@huggingface/transformers`) | Model runtime | jsDelivr | Apache 2.0 |
-| Fredoka font | UI headings | Google Fonts | SIL Open Font License 1.1 |
+| Fredoka font | Display type and counters | Google Fonts | SIL Open Font License 1.1 |
+| Nunito font | UI and body text (design, from M1) | Google Fonts | SIL Open Font License 1.1 |
 
 Not allowed: Depth Anything V2 Base and Large (CC-BY-NC 4.0).
 

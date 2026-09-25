@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Creature sheets</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0;font-family:Nunito,system-ui,sans-serif;color:#2B2140;background:#FFF6E9}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1900px; box-sizing: border-box; padding: 56px 64px; background: #FFF6E9; color: #2B2140; font-family: Nunito, system-ui, sans-serif; display: flex; flex-direction: column; gap: 20px">
+  <div style="display: flex; flex-direction: column; gap: 8px">
+    <h1 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 700; font-size: 48px; line-height: 1">Las criaturas</h1>
+    <p style="margin: 0; max-width: 900px; font-size: 17px; font-weight: 600; color: #5A4E6E">Six original species. Chunky ink outline, flat body colour, big eyes set high so a third of the creature is enough to read who it is. The peeking column shows the minimum that must stay recognisable.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 340px repeat(4, minmax(0, 1fr)); gap: 16px; align-items: end; padding: 0 0 4px">
+    <span></span>
+    <span style="font-family: Fredoka, sans-serif; font-weight: 600; font-size: 20px; text-align: center">Idle</span>
+    <span style="font-family: Fredoka, sans-serif; font-weight: 600; font-size: 20px; text-align: center">Peeking</span>
+    <span style="font-family: Fredoka, sans-serif; font-weight: 600; font-size: 20px; text-align: center">Nearly found</span>
+    <span style="font-family: Fredoka, sans-serif; font-weight: 600; font-size: 20px; text-align: center">Caught</span>
+  </div>
+
+  <sc-for list="{{species}}" as="sp" hint-placeholder-count="6">
+    <div style="display: grid; grid-template-columns: 340px repeat(4, minmax(0, 1fr)); gap: 16px; align-items: center; height: 232px; border-top: 2px solid #EADCC6; padding-top: 12px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <span style="width: 22px; height: 22px; border-radius: 999px; border: 2px solid #2B2140; background: {{sp.color}}"></span>
+          <h2 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 700; font-size: 30px">{{sp.name}}</h2>
+          <sc-if value="{{sp.rare}}" hint-placeholder-val="{{ false }}">
+            <span style="padding: 2px 10px; border-radius: 999px; background: #5B4BDB; color: #FFFFFF; font-size: 12px; font-weight: 800">RARA</span>
+          </sc-if>
+        </div>
+        <p style="margin: 0; font-size: 15px; font-weight: 600; line-height: 1.4">{{sp.behaviour}}</p>
+        <p style="margin: 0; font-size: 13px; font-weight: 700; color: #5A4E6E">Prefers: {{sp.spot}}</p>
+      </div>
+      <sc-for list="{{sp.cells}}" as="cell" hint-placeholder-count="4">
+        <div style="display: flex; justify-content: center; align-items: center; height: 212px; border-radius: 28px; background: {{cell.bg}}; overflow: hidden">
+          <dc-import name="Creature" species="{{cell.species}}" mood="{{cell.mood}}" size="{{cell.size}}" hint-size="180px,180px"></dc-import>
+        </div>
+      </sc-for>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const rows = [
+      { key: 'pompon', name: 'Pompón', color: '#7BE0AD', behaviour: 'The default friend. Round and fuzzy; peeks with its eyes over edges and holds on with two paws.', spot: 'horizontal edges (sofa backs, tables)' },
+      { key: 'fideo', name: 'Fideo', color: '#FF9F6B', behaviour: 'Long and thin. Hides behind table legs and door frames and peeks sideways, one eye first.', spot: 'vertical edges (legs, frames)' },
+      { key: 'timido', name: 'Tímido', color: '#C3A8FF', behaviour: 'Tiny. Pulls back if more than half of it is visible for too long, so you have to be quick.', spot: 'low horizontal edges' },
+      { key: 'curioso', name: 'Curioso', color: '#6CC4FF', behaviour: 'Leans slightly towards the seeker when not looked at directly. The antenna bulb gives it away.', spot: 'any edge near the middle of the room' },
+      { key: 'dormilon', name: 'Dormilón', color: '#9EA3F0', behaviour: 'Sleeps. Floating Zzz give it away. Wakes with one eye when you get close.', spot: 'darker areas' },
+      { key: 'brillo', name: 'Brillo', color: '#FFE06B', behaviour: 'Glows softly. Only appears in dark rooms, where its halo makes it easier to spot.', spot: 'dark rooms, any edge', rare: true }
+    ];
+    const moods = ['idle', 'peek', 'near', 'caught'];
+    return {
+      species: rows.map(r => ({
+        ...r,
+        rare: !!r.rare,
+        cells: moods.map(m => ({
+          species: r.key,
+          mood: m,
+          size: 180,
+          bg: r.key === 'brillo' ? '#2B2140' : (m === 'caught' ? '#FFEFC2' : '#FFFFFF')
+        }))
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

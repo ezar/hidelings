@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Calibración</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0;font-family:Nunito,system-ui,sans-serif}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #000000; font-family: Nunito, system-ui, sans-serif; color: #2B2140">
+  <div style="position: absolute; left: 0; top: 0"><dc-import name="Room" layer="all" hint-size="390px,844px"></dc-import></div>
+
+  <svg viewBox="0 0 390 844" width="390" height="844" style="position: absolute; left: 0; top: 0" aria-hidden="true">
+    <line x1="124" y1="118" x2="124" y2="580" stroke="#FFC53D" stroke-width="4" stroke-dasharray="10 8"></line>
+  </svg>
+  <div style="position: absolute; left: 90px; top: 280px"><dc-import name="Creature" species="fideo" mood="idle" size="96" hint-size="96px,96px"></dc-import></div>
+
+  <div style="position: absolute; left: 12px; right: 12px; top: 54px; padding: 16px; border-radius: 24px; background: #FFF6E9; border: 2px solid #2B2140; display: flex; flex-direction: column; gap: 8px">
+    <span style="font-family: Fredoka, sans-serif; font-weight: 700; font-size: 24px">Pega a Fideo a la puerta</span>
+    <p style="margin: 0; font-size: 16px; font-weight: 700; line-height: 1.4">Apunta al marco de una puerta y gira el móvil despacio a un lado y al otro. Fideo tiene que quedarse pegado a la línea.</p>
+  </div>
+
+  <div style="position: absolute; left: 12px; right: 12px; bottom: 28px; display: flex; flex-direction: column; gap: 12px">
+    <div style="padding: 14px 16px; border-radius: 24px; background: rgba(30,22,46,.8); color: #FFFFFF; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+        <span style="display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; border-radius: 999px; background: #D8F5E6; color: #14532D; font-size: 15px; font-weight: 800">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#14532D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>
+          Izquierda
+        </span>
+        <span style="display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; border-radius: 999px; border: 2px dashed #FFC53D; color: #FFFFFF; font-size: 15px; font-weight: 800">
+          Derecha
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFC53D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+        </span>
+      </div>
+      <p style="margin: 0; text-align: center; font-size: 14px; font-weight: 700">Casi lo tengo · campo de visión 62°</p>
+    </div>
+    <button style="min-height: 52px; border-radius: 999px; border: 0; background: rgba(30,22,46,.74); color: #FFFFFF; font: 800 16px Nunito, sans-serif">Ajustar a mano</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

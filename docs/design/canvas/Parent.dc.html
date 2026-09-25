@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Zona de padres</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0;font-family:Nunito,system-ui,sans-serif}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; padding: 56px 16px 24px; background: #F4F5F7; color: #1F2430; font-family: Nunito, system-ui, sans-serif; display: flex; flex-direction: column; gap: 16px">
+  <div style="display: flex; align-items: center; justify-content: space-between">
+    <h1 style="margin: 0; font-size: 26px; font-weight: 800">Zona de padres</h1>
+    <button style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CDD6; background: #FFFFFF; color: #3E5BA9; font: 800 15px Nunito, sans-serif">Salir</button>
+  </div>
+
+  <section style="display: flex; flex-direction: column; gap: 6px">
+    <h2 style="margin: 0; padding: 0 4px; font-size: 13px; font-weight: 800; color: #5B6272; letter-spacing: 0.04em">PARTIDA</h2>
+    <div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 14px">
+      <sc-for list="{{steppers}}" as="s" hint-placeholder-count="2">
+        <div style="display: flex; align-items: center; gap: 8px; min-height: 56px; padding: 0 12px; border-bottom: 1px solid #ECEEF2">
+          <span style="flex-grow: 1; font-size: 16px; font-weight: 700">{{s.label}}</span>
+          <button aria-label="Menos" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #C9CDD6; background: #F4F5F7; color: #1F2430; font: 800 18px Nunito, sans-serif">−</button>
+          <span style="min-width: 64px; text-align: center; font-size: 16px; font-weight: 800">{{s.value}}</span>
+          <button aria-label="Más" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #C9CDD6; background: #F4F5F7; color: #1F2430; font: 800 18px Nunito, sans-serif">+</button>
+        </div>
+      </sc-for>
+      <sc-for list="{{toggles}}" as="t" hint-placeholder-count="2">
+        <div style="display: flex; align-items: center; gap: 8px; min-height: 56px; padding: 0 12px; border-bottom: 1px solid #ECEEF2">
+          <span style="flex-grow: 1; font-size: 16px; font-weight: 700">{{t.label}}</span>
+          <button aria-pressed="{{t.on}}" aria-label="{{t.label}}" style="width: 52px; height: 32px; border-radius: 999px; border: 0; padding: 3px; background: {{t.track}}; display: flex; justify-content: {{t.align}}">
+            <span style="width: 26px; height: 26px; border-radius: 999px; background: #FFFFFF"></span>
+          </button>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 6px">
+    <h2 style="margin: 0; padding: 0 4px; font-size: 13px; font-weight: 800; color: #5B6272; letter-spacing: 0.04em">DATOS EN ESTE MÓVIL</h2>
+    <div style="background: #FFFFFF; border: 1px solid #DDE0E6; border-radius: 14px">
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="3">
+        <div style="display: flex; align-items: center; gap: 8px; min-height: 56px; padding: 0 12px; border-bottom: 1px solid #ECEEF2">
+          <span style="flex-grow: 1; display: flex; flex-direction: column">
+            <span style="font-size: 16px; font-weight: 700">{{r.label}}</span>
+            <span style="font-size: 13px; font-weight: 700; color: #5B6272">{{r.detail}}</span>
+          </span>
+          <button style="min-height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid #C9CDD6; background: #FFFFFF; color: #3E5BA9; font: 800 14px Nunito, sans-serif">{{r.action}}</button>
+        </div>
+      </sc-for>
+    </div>
+    <button style="min-height: 48px; margin-top: 6px; border-radius: 12px; border: 1px solid #E3B7B3; background: #FFFFFF; color: #B3372F; font: 800 15px Nunito, sans-serif">Borrar la colección</button>
+  </section>
+
+  <div style="flex-grow: 1"></div>
+  <p style="margin: 0; text-align: center; font-size: 13px; font-weight: 700; color: #5B6272">Sin cuentas ni anuncios. Ninguna imagen sale de este dispositivo.</p>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const toggle = (label, on) => ({ label, on: String(on), track: on ? '#3E5BA9' : '#C9CDD6', align: on ? 'flex-end' : 'flex-start' });
+    return {
+      steppers: [
+        { label: 'Tiempo máximo de juego', value: '20 min' },
+        { label: 'Primera pista tras', value: '60 s' }
+      ],
+      toggles: [
+        toggle('En solitario, se mueven', true),
+        toggle('Sonido', true)
+      ],
+      rows: [
+        { label: 'Modelos descargados', detail: '48 MB · profundidad y manos', action: 'Borrar' },
+        { label: 'Calibración', detail: 'Salón · 62°', action: 'Repetir' },
+        { label: 'Colección', detail: '4 especies · 27 capturas', action: 'Exportar' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hidelings tokens</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0;font-family:Nunito,system-ui,sans-serif;color:#2B2140;background:#FFF6E9}
+</style>
+</helmet>
+<div style="width: 1280px; height: 900px; box-sizing: border-box; padding: 56px 64px; background: #FFF6E9; color: #2B2140; font-family: Nunito, system-ui, sans-serif; display: flex; flex-direction: column; gap: 36px">
+  <div style="display: flex; align-items: baseline; justify-content: space-between">
+    <h1 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 700; font-size: 48px; line-height: 1">Hidelings tokens</h1>
+    <p style="margin: 0; font-size: 15px; font-weight: 700; color: #5A4E6E">Picture book at home: warm paper, deep plum ink, honey for action.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px">
+    <div style="display: flex; flex-direction: column; gap: 28px">
+      <section style="display: flex; flex-direction: column; gap: 12px">
+        <h2 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 22px">Game colour</h2>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+          <sc-for list="{{game}}" as="c" hint-placeholder-count="8">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <div style="height: 64px; border-radius: 16px; border: 2px solid #2B2140; background: {{c.hex}}"></div>
+              <div style="font-size: 14px; font-weight: 800">{{c.name}}</div>
+              <div style="font-size: 12px; font-weight: 700; color: #5A4E6E">{{c.hex}} · {{c.use}}</div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+      <section style="display: flex; flex-direction: column; gap: 12px">
+        <h2 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 22px">Creature palette (species base)</h2>
+        <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px">
+          <sc-for list="{{species}}" as="c" hint-placeholder-count="6">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <div style="height: 48px; border-radius: 999px; border: 2px solid #2B2140; background: {{c.hex}}"></div>
+              <div style="font-size: 13px; font-weight: 800">{{c.name}}</div>
+              <div style="font-size: 11px; font-weight: 700; color: #5A4E6E">{{c.hex}}</div>
+            </div>
+          </sc-for>
+        </div>
+        <p style="margin: 0; font-size: 13px; font-weight: 600; color: #5A4E6E">Each instance shifts hue by up to ±12° and lightness by ±6% within its species.</p>
+      </section>
+      <section style="display: flex; flex-direction: column; gap: 12px">
+        <h2 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 22px">Parent area (calm, separate)</h2>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+          <sc-for list="{{parent}}" as="c" hint-placeholder-count="4">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <div style="height: 40px; border-radius: 10px; border: 1px solid #C9CDD6; background: {{c.hex}}"></div>
+              <div style="font-size: 12px; font-weight: 700; color: #5A4E6E">{{c.name}} {{c.hex}}</div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 28px">
+      <section style="display: flex; flex-direction: column; gap: 10px">
+        <h2 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 22px">Type</h2>
+        <div style="display: flex; align-items: baseline; gap: 16px"><span style="width: 120px; font-size: 12px; font-weight: 800; color: #5A4E6E">display 48/48</span><span style="font-family: Fredoka, sans-serif; font-weight: 700; font-size: 48px; line-height: 1">Hidelings</span></div>
+        <div style="display: flex; align-items: baseline; gap: 16px"><span style="width: 120px; font-size: 12px; font-weight: 800; color: #5A4E6E">title 32/36</span><span style="font-family: Fredoka, sans-serif; font-weight: 700; font-size: 32px; line-height: 1.1">¡Todas encontradas!</span></div>
+        <div style="display: flex; align-items: baseline; gap: 16px"><span style="width: 120px; font-size: 12px; font-weight: 800; color: #5A4E6E">heading 24/28</span><span style="font-family: Fredoka, sans-serif; font-weight: 600; font-size: 24px">Esconder por mí</span></div>
+        <div style="display: flex; align-items: baseline; gap: 16px"><span style="width: 120px; font-size: 12px; font-weight: 800; color: #5A4E6E">button 18/24</span><span style="font-weight: 800; font-size: 18px">Listo, pasa el móvil</span></div>
+        <div style="display: flex; align-items: baseline; gap: 16px"><span style="width: 120px; font-size: 12px; font-weight: 800; color: #5A4E6E">body 17/24</span><span style="font-weight: 600; font-size: 17px">Apunta a una puerta y gira despacio a los lados.</span></div>
+        <div style="display: flex; align-items: baseline; gap: 16px"><span style="width: 120px; font-size: 12px; font-weight: 800; color: #5A4E6E">small 14/20</span><span style="font-weight: 700; font-size: 14px; color: #5A4E6E">Nada sale del móvil.</span></div>
+        <p style="margin: 0; font-size: 13px; font-weight: 600; color: #5A4E6E">Fredoka for display and counters, Nunito for everything else. Both OFL. English runs up to 30% longer in buttons; labels wrap to two lines before they shrink.</p>
+      </section>
+
+      <section style="display: flex; flex-direction: column; gap: 10px">
+        <h2 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 22px">Spacing and radius</h2>
+        <div style="display: flex; align-items: flex-end; gap: 14px">
+          <sc-for list="{{space}}" as="s" hint-placeholder-count="9">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px">
+              <div style="width: {{s.px}}px; height: {{s.px}}px; background: #5B4BDB; border-radius: 4px"></div>
+              <span style="font-size: 11px; font-weight: 800">{{s.px}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 14px">
+          <sc-for list="{{radii}}" as="r" hint-placeholder-count="4">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px">
+              <div style="width: 72px; height: 48px; background: #FFFFFF; border: 2px solid #2B2140; border-radius: {{r.px}}px"></div>
+              <span style="font-size: 11px; font-weight: 800">{{r.name}} {{r.px}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <section style="display: flex; flex-direction: column; gap: 10px">
+        <h2 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 22px">Over the camera</h2>
+        <div style="display: flex; gap: 12px; align-items: center; padding: 16px; border-radius: 20px; background: #7D6F60">
+          <span style="padding: 10px 16px; border-radius: 999px; background: rgba(30,22,46,.74); color: #FFFFFF; font-weight: 800; font-size: 15px">HUD pill · glass</span>
+          <span style="padding: 8px 14px; border-radius: 999px; background: #FFC53D; color: #2B2140; font-family: Fredoka, sans-serif; font-weight: 700; font-size: 22px; border: 2px solid #2B2140">2 / 5</span>
+          <button style="min-height: 56px; padding: 0 22px; border-radius: 999px; border: 2px solid #2B2140; background: #FFC53D; color: #2B2140; font: 800 18px Nunito, sans-serif">Buscar</button>
+        </div>
+        <p style="margin: 0; font-size: 13px; font-weight: 600; color: #5A4E6E">Touch targets 56 px in play, 48 px in the parent area. HUD sits in the top 96 px and bottom 120 px; the middle of the camera stays clear.</p>
+      </section>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      game: [
+        { name: 'Ink', hex: '#2B2140', use: 'text, outlines' },
+        { name: 'Ink soft', hex: '#5A4E6E', use: 'secondary text' },
+        { name: 'Paper', hex: '#FFF6E9', use: 'screens' },
+        { name: 'Line', hex: '#EADCC6', use: 'dividers' },
+        { name: 'Honey', hex: '#FFC53D', use: 'primary action' },
+        { name: 'Berry', hex: '#5B4BDB', use: 'secondary, curtain' },
+        { name: 'Mint soft', hex: '#D8F5E6', use: 'success' },
+        { name: 'Glass', hex: 'rgba(30,22,46,.74)', use: 'HUD over camera' }
+      ],
+      species: [
+        { name: 'Pompón', hex: '#7BE0AD' },
+        { name: 'Fideo', hex: '#FF9F6B' },
+        { name: 'Tímido', hex: '#C3A8FF' },
+        { name: 'Curioso', hex: '#6CC4FF' },
+        { name: 'Dormilón', hex: '#9EA3F0' },
+        { name: 'Brillo', hex: '#FFE06B' }
+      ],
+      parent: [
+        { name: 'Surface', hex: '#F4F5F7' },
+        { name: 'Text', hex: '#1F2430' },
+        { name: 'Accent', hex: '#3E5BA9' },
+        { name: 'Danger', hex: '#B3372F' }
+      ],
+      space: [4, 8, 12, 16, 20, 24, 32, 40, 56].map(px => ({ px })),
+      radii: [
+        { name: 'sm', px: 12 },
+        { name: 'md', px: 20 },
+        { name: 'lg', px: 28 },
+        { name: 'pill', px: 999 }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

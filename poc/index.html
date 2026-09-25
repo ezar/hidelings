@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#10161f">
+  <title>Hidelings · PoC M0</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="stage" class="stage">
+    <video id="video" playsinline muted></video>
+    <canvas id="overlay"></canvas>
+
+    <div class="hud" id="hud" hidden>
+      <p id="hud-text"></p>
+      <span id="hud-count" class="count" hidden></span>
+    </div>
+    <p id="banner" class="banner" hidden></p>
+
+    <section id="intro" class="intro">
+      <h1>Hidelings</h1>
+      <p>Criaturas que se esconden detrás de las cosas de tu casa. Muévete y búscalas.</p>
+      <button id="btn-start" class="primary">Empezar</button>
+      <p class="small">Usa la cámara, el giroscopio y un modelo de profundidad que funciona dentro del móvil. Nada sale del dispositivo. Mantén el móvil en vertical.</p>
+      <p id="intro-status" class="small status"></p>
+    </section>
+
+    <nav id="bar" class="bar" hidden>
+      <button id="btn-auto">Esconder 5</button>
+      <button id="btn-mode" class="primary">Buscar</button>
+      <button id="btn-hands" aria-pressed="false">Manos</button>
+      <button id="btn-settings" aria-expanded="false">Ajustes</button>
+    </nav>
+
+    <section id="sheet" class="sheet" hidden>
+      <p id="stats" class="mono">Sin datos todavía.</p>
+      <label>Resolución de profundidad
+        <select id="depth-size">
+          <option value="196">196 (rápida)</option>
+          <option value="252" selected>252</option>
+          <option value="308">308</option>
+          <option value="364">364 (fina)</option>
+        </select>
+      </label>
+      <label>Campo de visión de la cámara: <output id="fov-out">64°</output>
+        <input id="fov" type="range" min="40" max="85" value="64">
+      </label>
+      <label class="check"><input id="show-depth" type="checkbox"> Ver mapa de profundidad</label>
+      <div class="row">
+        <button id="btn-reset">Quitar criaturas</button>
+        <button id="btn-report">Copiar informe</button>
+      </div>
+      <pre id="log" class="mono log"></pre>
+    </section>
+  </div>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

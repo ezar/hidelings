@@ -174,3 +174,19 @@ describe('species', () => {
     expect(speciesForSpot(null, 0.5)).toBeDefined();
   });
 });
+
+describe('species conditions', () => {
+  it('only offers Brillo in a dark room', async () => {
+    const { availableSpecies } = await import('./species');
+    expect(availableSpecies(150)).not.toContain('brillo');
+    expect(availableSpecies(40)).toContain('brillo');
+    expect(availableSpecies(null)).not.toContain('brillo');
+  });
+
+  it('puts Dormilón in dark spots and never picks Brillo outside the pool', async () => {
+    const { speciesForSpot, COMMON_SPECIES } = await import('./species');
+    expect(speciesForSpot({ kind: 'horizontal', dark: true }, 0.2, COMMON_SPECIES)).toBe('dormilon');
+    for (let r = 0; r < 1; r += 0.05) expect(speciesForSpot({ kind: 'vertical' }, r, COMMON_SPECIES)).not.toBe('brillo');
+    expect(speciesForSpot({ kind: 'vertical' }, 0.1, [...COMMON_SPECIES, 'brillo'])).toBe('brillo');
+  });
+});

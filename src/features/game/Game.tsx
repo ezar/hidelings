@@ -22,7 +22,10 @@ import {
   type CatchMethod,
 } from '../../engine/round';
 import { NearlyFoundTracker, RetreatTracker, hiddenEnough, hintStage, panFor, pickCatchTarget } from '../../engine/rules';
-import { M3_SPECIES, SPECIES, speciesForSpot, type SpeciesId, type SpotKind } from '../../engine/species';
+import { COMMON_SPECIES, SPECIES, speciesForSpot, type SpeciesId, type SpotKind } from '../../engine/species';
+import { recordCatch } from '../../data/collection';
+import { SpeedWatch } from '../../perception/motion/speed';
+import { SlowDown } from '../safety/Safety';
 import { fill } from '../../i18n/strings';
 import type { PosedDepthMap } from '../../perception/depth/temporal';
 import { detectHands, handsReady, loadHands } from '../../perception/hands/landmarker';
@@ -39,7 +42,6 @@ import { Curtain } from './Curtain';
 import { Results } from './Results';
 import { useRound } from './roundStore';
 
-const HINT_DELAY_MS = 60_000;
 const HINT_SOUND_EVERY_MS = 6_000;
 const SNAP_PX = 44;
 const PENDING_CHECK_MS = 900;
@@ -56,6 +58,10 @@ export function Game() {
   const t = useT();
   const setSession = useSession(s => s.set);
   const { lang, setLang, hands, setHands } = useSettings();
+  const [slow, setSlow] = useState(false);
+  const speed = useRef(new SpeedWatch());
+  /** Curioso creeps closer while it is not being looked at (spec 6.1). */
+  const curious = useRef(new Map<number, { base: number; now: number }>());
   const round = useRound(s => s.round);
   const apply = useRound(s => s.apply);
 
@@ -79,6 +85,7 @@ export function Game() {
   const populated = useRef(false);
   /** "Listo" was pressed while some placements were still waiting for their visibility check. */
   const wantHandover = useRef(false);
+  const slowRef = useRef(false);
 
   const tRef = useRef(t);
   useEffect(() => { tRef.current = t; }, [t]);
@@ -208,6 +215,10 @@ export function Game() {
     renderer.setMood(id, 'caught');
     window.setTimeout(() => rendererRef.current?.removeCreature(id), 500);
     apply(state => catchCreature(state, id, performance.now(), visible, method));
+    const { parent } = useSettings.getState();
+    recordCatch({ species: c.species, at: Date.now(), room: parent.room || tRef.current.defaultRoom, mode: 'pass', method, visible })
+      .then(isNew => { if (isNew) flash(fill(tRef.current.newSpecies, { name: SPECIES[c.species].name }), 2600); })
+      .catch(e => log(`Collection error: ${String(e)}`));
     play('catch');
     navigator.vibrate?.(40);
     log(`Caught ${c.species} by ${method} (visible ${Math.round(visible * 100)}%)`);
@@ -258,8 +269,23 @@ export function Game() {
         r = useRound.getState().round;
       }
 
+      // Safety (spec 12): swinging the phone around fast shows "más despacio" instead of the game.
+      const tooFast = (r.phase === 'hide' || r.phase === 'seek') && speed.current.update(pose, now);
+      if (tooFast !== slowRef.current) { slowRef.current = tooFast; setSlow(tooFast); }
+
       // Behaviour before drawing, so moods apply this frame.
       if (r.phase === 'seek') {
+        for (const c of renderer.list) {
+          if (c.species !== 'curioso' || c.rig.mood === 'caught') continue;
+          const state = curious.current.get(c.id) ?? { base: c.disp, now: c.disp };
+          const d = toDevice(pose, c.dir);
+          const offCentre = Math.acos(Math.max(-1, Math.min(1, -d[2] / Math.hypot(d[0], d[1], d[2])))) > (25 * Math.PI) / 180;
+          // Not looked at directly: creep nearer, up to a little in front of where it was hidden.
+          const target = offCentre ? state.base + 0.12 : state.now;
+          state.now += Math.sign(target - state.now) * Math.min(Math.abs(target - state.now), 0.0004);
+          curious.current.set(c.id, state);
+          if (Math.abs(state.now - c.disp) > 0.002) renderer.setCreatureDisp(c.id, state.now);
+        }
         for (const c of renderer.list) {
           if (c.rig.mood === 'caught') continue;
           if (SPECIES[c.species].retreat) {
@@ -363,7 +389,7 @@ export function Game() {
           }
         }
         // Hints: a panned sound, then an arrow at the screen edge (spec 4.2).
-        const stage = r.pausedAt !== null ? 0 : Math.max(hintStage(now, r.lastProgressAt ?? now, HINT_DELAY_MS), now < forcedHintUntil.current ? 2 : 0);
+        const stage = r.pausedAt !== null ? 0 : Math.max(hintStage(now, r.lastProgressAt ?? now, useSettings.getState().parent.hintDelaySec * 1000), now < forcedHintUntil.current ? 2 : 0);
         const target = nearestUncaught(pose);
         if (stage >= 1 && target && now - lastHintSound.current > HINT_SOUND_EVERY_MS) {
           lastHintSound.current = now;
@@ -432,6 +458,7 @@ export function Game() {
     apply(toSeek);
   };
   const replayRound = () => {
+    curious.current.clear();
     const renderer = rendererRef.current;
     renderer?.clear();
     setStills(new Map());
@@ -444,7 +471,8 @@ export function Game() {
     rendererRef.current?.clear();
     setStills(new Map());
     setTimeUpSeen(false);
-    apply(() => newRound());
+    curious.current.clear();
+    apply(() => newRound(useSettings.getState().parent.timeLimitMin * 60_000));
   };
   const endRound = () => {
     apply(r => giveUp(r, performance.now()));
@@ -496,7 +524,7 @@ export function Game() {
                 </label>
                 <div className="row">
                   <button className="btn" onClick={() => setSession({ phase: 'calibration' })}>{t.calibrate}</button>
-                  <button className="btn" onClick={() => setSession({ phase: 'lab' })}>{t.lab}</button>
+                  <button className="btn" onClick={() => setSession({ phase: 'home' })}>{t.menu}</button>
                 </div>
                 <div className="row">
                   <button className="btn" onClick={() => void copyReport()}>{t.report}</button>
@@ -506,7 +534,7 @@ export function Game() {
             )}
             <div className="chips-bar" role="group">
               <button aria-pressed={choice === 'auto'} className="species-chip auto" onClick={() => setChoice('auto')}>{t.hideAuto}</button>
-              {M3_SPECIES.map(id => (
+              {COMMON_SPECIES.map(id => (
                 <button key={id} aria-pressed={choice === id} aria-label={SPECIES[id].name} className="species-chip" style={{ background: SPECIES[id].color }} onClick={() => setChoice(id)} />
               ))}
               <span className="chip-name">{choice === 'auto' ? '' : SPECIES[choice].name}</span>
@@ -567,10 +595,11 @@ export function Game() {
 
       {showResults && (
         <div className="results-layer">
-          <Results round={round} stills={stills} onReplay={replayRound} onHideAgain={hideAgain} />
+          <Results round={round} stills={stills} onReplay={replayRound} onHideAgain={hideAgain} onMenu={() => setSession({ phase: 'home' })} />
         </div>
       )}
 
+      {slow && (round.phase === 'hide' || round.phase === 'seek') && <SlowDown />}
       {banner && <p className="toast">{banner}</p>}
       {handsState === 'loading' && round.phase === 'seek' && <p className="toast">{t.handsLoading}</p>}
     </div>

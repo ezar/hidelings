@@ -2,7 +2,7 @@
 
 Little creatures that hide behind the real things in your house. Point the phone around the room, spot one peeking out from behind the sofa, and catch it with a tap or a pinch.
 
-- **App**: https://ezar.github.io/hidelings/ (M4: pass-and-play and solo with six species, the collection, the parent area and the safety screens; the occlusion lab is on the main menu).
+- **App**: https://ezar.github.io/hidelings/ (pass-and-play and solo with six species, the collection with AR Quick Look on iOS, an Android WebXR mode, the parent area and the safety screens; the occlusion lab is on the main menu).
 - **M0 proof of concept**: https://ezar.github.io/hidelings/poc/
 
 ## Docs

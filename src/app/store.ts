@@ -6,7 +6,7 @@ import type { DepthHost } from '../perception/depth/depthService';
 import type { DeviceProbe } from '../perception/probe/probe';
 import type { Difficulty } from '../engine/solo';
 
-export type Phase = 'welcome' | 'starting' | 'download' | 'calibration' | 'home' | 'game' | 'solo' | 'collection' | 'parent' | 'break' | 'lab' | 'error';
+export type Phase = 'welcome' | 'starting' | 'download' | 'calibration' | 'home' | 'game' | 'solo' | 'xr' | 'collection' | 'parent' | 'break' | 'lab' | 'error';
 export type StartStep = 'motion' | 'camera' | 'probe' | 'benchmark';
 
 export interface ParentSettings {

@@ -9,6 +9,7 @@ import { useRound } from '../features/game/roundStore';
 import { sessionOver } from '../perception/motion/speed';
 import { Calibration } from '../features/calibration/Calibration';
 import { Game } from '../features/game/Game';
+import { XrGame } from '../features/xr/XrGame';
 import { Lab } from '../features/lab/Lab';
 import { Download } from '../features/onboarding/Download';
 import { ErrorScreen } from '../features/onboarding/ErrorScreen';
@@ -44,8 +45,8 @@ export function App() {
       const { startedAt, phase: current, set } = useSession.getState();
       const limit = useSettings.getState().parent.sessionLimitMin;
       if (!startedAt || !sessionOver(startedAt, Date.now(), limit)) return;
-      if (!['home', 'game', 'solo', 'collection'].includes(current)) return;
-      if ((current === 'game' || current === 'solo') && useRound.getState().round.phase === 'seek') return;
+      if (!['home', 'game', 'solo', 'xr', 'collection'].includes(current)) return;
+      if ((current === 'game' || current === 'solo' || current === 'xr') && useRound.getState().round.phase === 'seek') return;
       set({ phase: 'break' });
     }, 10_000);
     return () => clearInterval(id);
@@ -58,6 +59,7 @@ export function App() {
     phase === 'break' ? <Break /> :
     phase === 'game' ? <Game mode="pass" /> :
     phase === 'solo' ? <Game mode="solo" /> :
+    phase === 'xr' ? <XrGame /> :
     phase === 'lab' ? <Lab /> :
     phase === 'calibration' ? <Calibration /> :
     phase === 'download' ? <Download /> :

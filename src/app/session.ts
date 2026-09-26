@@ -11,6 +11,21 @@ import { useSession, useSettings } from './store';
 /** Live resources of the running session, shared by the screens. */
 export const live: { stream: MediaStream | null; depth: DepthService | null } = { stream: null, depth: null };
 
+/** Opens the rear camera if it is not open yet (again after the WebXR mode, which needs it for itself). */
+export async function openCamera(): Promise<MediaStream> {
+  live.stream ??= await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+    audio: false,
+  });
+  return live.stream;
+}
+
+/** Stops the camera so another user of it (ARCore, for WebXR) can take it. */
+export function closeCamera() {
+  live.stream?.getTracks().forEach(t => t.stop());
+  live.stream = null;
+}
+
 const isMock = () => new URLSearchParams(location.search).has('mock');
 
 /** Must be called directly from the tap handler: the motion permission request is its first await. */
@@ -24,11 +39,9 @@ export async function startSession(): Promise<void> {
   log(`Orientation: ${motion ? 'enabled' : 'unavailable'}`);
   session.set({ motion, step: 'camera' });
 
+  let stream: MediaStream;
   try {
-    live.stream ??= await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
-      audio: false,
-    });
+    stream = await openCamera();
   } catch (e) {
     log(`Camera error: ${String(e)}`);
     session.set({ phase: 'error', error: 'camera', errorDetail: String(e) });
@@ -64,7 +77,7 @@ export async function startSession(): Promise<void> {
 
   if (settings.depthSize === null && config.device !== 'mock') {
     session.set({ phase: 'starting', step: 'benchmark' });
-    const size = await benchmark(depth, live.stream);
+    const size = await benchmark(depth, stream);
     useSettings.getState().setDepthSize(size);
     depth.setSize(size);
     session.set({ config: { ...config, size } });

@@ -13,6 +13,7 @@ Every model and asset the project loads or bundles, with its license. The projec
 | Fredoka font | Display type and counters | Google Fonts | SIL Open Font License 1.1 |
 | Nunito font | UI and body text (design, from M1) | Google Fonts | SIL Open Font License 1.1 |
 | App icon and creatures (all six species) | Icons, menus, collection, creatures | Original, built in code: `public/icon.svg`, `src/render/Pompon.tsx`, `src/render/Creature2D.tsx`, `src/render/creatures3d.ts` | MIT (this project) |
+| three.js USDZExporter and fflate | AR Quick Look export from the collection | npm (bundled with three.js, loaded on demand) | MIT |
 | Dexie (4.x) | Collection storage in IndexedDB | npm (bundled) | Apache 2.0 |
 | Sounds | Hints, reactions, catches | Synthesized with Web Audio in `src/audio/audio.ts` | MIT (this project) |
 

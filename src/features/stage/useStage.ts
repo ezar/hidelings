@@ -1,7 +1,7 @@
 // Shared camera stage: the live video plus the Three.js overlay, kept in sync with the video size and the
 // calibrated field of view. Screens drive their own loops on top of it.
 import { useCallback, useEffect, useRef, type RefObject } from 'react';
-import { live } from '../../app/session';
+import { live, openCamera } from '../../app/session';
 import { log } from '../../app/report';
 import { useSettings } from '../../app/store';
 import { OcclusionRenderer } from '../../render/occlusionRenderer';
@@ -12,9 +12,18 @@ export function useStage(videoRef: RefObject<HTMLVideoElement | null>, glRef: Re
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !live.stream) return;
-    video.srcObject = live.stream;
-    video.play().catch(e => log(`Video play: ${String(e)}`));
+    if (!video) return;
+    let alive = true;
+    // The camera is closed after the WebXR mode; open it again (permission is already granted).
+    (live.stream ? Promise.resolve(live.stream) : openCamera()).then(
+      stream => {
+        if (!alive) return;
+        video.srcObject = stream;
+        video.play().catch(e => log(`Video play: ${String(e)}`));
+      },
+      e => log(`Camera error: ${String(e)}`),
+    );
+    return () => { alive = false; };
   }, [videoRef]);
 
   useEffect(() => {

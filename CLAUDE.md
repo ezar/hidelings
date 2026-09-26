@@ -23,7 +23,8 @@ Browser hide-and-seek game: creatures hide behind real furniture seen through th
 - M4a (six species, collection, parent area, safety): built without waiting for device checks, at the owner's request. See [`docs/decisions/0005-m4-collection-parent-safety.md`](docs/decisions/0005-m4-collection-parent-safety.md).
 - M4b (solo mode, room scan, moving creatures, rare species, spatial sound): built, same way. Acceptance: a solo round across a whole room works and Brillo appears in a dark room. See [`docs/decisions/0006-m4-solo.md`](docs/decisions/0006-m4-solo.md).
 - M5a (parallax and drift: per-anchor image tracking): built, same way. Acceptance: walking one or two steps no longer makes creatures slide noticeably on the iPhone; compare with `?notrack`. See [`docs/decisions/0007-m5-parallax.md`](docs/decisions/0007-m5-parallax.md).
-- M5b (Android WebXR, AR Quick Look): next.
+- M5b (Android WebXR mode, AR Quick Look from the collection): built, same way. Acceptance: Android with WebXR anchors creatures in 6DoF. See [`docs/decisions/0008-m5-platforms.md`](docs/decisions/0008-m5-platforms.md).
+- All milestones are built. What is left is the device checks listed above, on the iPhone and on an Android phone with ARCore.
 
 ## Commands
 

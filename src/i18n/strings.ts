@@ -188,6 +188,15 @@ export const es = {
   soloNeedMore: 'Mira un poco más a tu alrededor',
   soloMoved: 'Una criatura ha cambiado de escondite…',
   soloHiding: '¡Se están escondiendo!',
+  modeXr: 'Realidad aumentada',
+  modeXrHelp: 'Android: se quedan en su sitio aunque camines.',
+  xrTitle: 'Esconder y buscar en AR',
+  xrBody: 'El móvil entiende la habitación en 3D: puedes moverte por ella. Una persona esconde, otra busca.',
+  xrEnter: 'Entrar',
+  xrHide: 'Apunta a un sitio detrás de un mueble y toca para esconder.',
+  xrNoDepth: 'Este móvil no sabe qué hay delante de las criaturas: no quedarán tapadas por los muebles.',
+  xrError: 'No se pudo abrir la realidad aumentada.',
+  xrExit: 'Salir de AR',
 };
 
 export type Strings = typeof es;
@@ -380,6 +389,15 @@ export const en: Strings = {
   soloNeedMore: 'Look around a little more',
   soloMoved: 'A creature has changed hiding spot…',
   soloHiding: 'They are hiding!',
+  modeXr: 'Augmented reality',
+  modeXrHelp: 'Android: they stay put even when you walk.',
+  xrTitle: 'Hide and seek in AR',
+  xrBody: 'The phone understands the room in 3D: you can walk around it. One person hides, another seeks.',
+  xrEnter: 'Enter',
+  xrHide: 'Point behind a piece of furniture and tap to hide.',
+  xrNoDepth: 'This phone cannot tell what is in front of the creatures: furniture will not cover them.',
+  xrError: 'Augmented reality could not start.',
+  xrExit: 'Exit AR',
 };
 
 export const STRINGS = { es, en };

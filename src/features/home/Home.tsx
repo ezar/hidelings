@@ -5,6 +5,7 @@ import { newRound } from '../../engine/round';
 import { Creature2D } from '../../render/Creature2D';
 import { useSession, useSettings, useT } from '../../app/store';
 import { useRound } from '../game/roundStore';
+import { xrSupported } from '../xr/XrGame';
 
 export function Home() {
   const t = useT();
@@ -12,8 +13,11 @@ export function Home() {
   const { lang, setLang, parent } = useSettings();
   const [catches, setCatches] = useState<number | null>(null);
 
+  const [xr, setXr] = useState(false);
+
   useEffect(() => {
     totalCatches().then(setCatches, () => setCatches(null));
+    xrSupported().then(setXr, () => setXr(false));
   }, []);
 
   const play = (phase: 'game' | 'solo') => {
@@ -53,6 +57,15 @@ export function Home() {
           <span>{t.modeSoloHelp}</span>
         </span>
       </button>
+
+      {xr && (
+        <button className="mode-card mode-card-xr" onClick={() => set({ phase: 'xr' })}>
+          <span className="mode-text">
+            <b>{t.modeXr}</b>
+            <span>{t.modeXrHelp}</span>
+          </span>
+        </button>
+      )}
 
       <button className="btn btn-big" onClick={() => set({ phase: 'collection' })}>
         {t.collection}{catches ? ` · ${catches}` : ''}

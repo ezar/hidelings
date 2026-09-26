@@ -197,3 +197,9 @@ button:focus-visible, select:focus-visible { outline: 3px solid var(--honey); ou
 .solo-countdown { position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: var(--paper); text-align: center; padding: 24px; }
 .solo-count { font: 700 96px/1 var(--font-display); color: var(--ink); }
 .mode-card-solo { background: var(--mint-soft); }
+
+/* Android WebXR mode: the overlay is the WebXR DOM overlay while in AR, and the intro page before it. */
+.xr-overlay { position: absolute; inset: 0; background: transparent; }
+.xr-stage .screen { min-height: 100%; }
+.mode-card-xr { background: var(--card); }
+.xr-stage { background: var(--paper); }

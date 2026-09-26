@@ -27,6 +27,7 @@ import { NearlyFoundTracker, RetreatTracker, hiddenEnough, hintStage, panFor, pi
 import { COMMON_SPECIES, SPECIES, availableSpecies, speciesForSpot, type SpeciesId, type SpotKind } from '../../engine/species';
 import { DIFFICULTY, RoomScan, angleBetween, hintGain, meanLuma, moveTarget, nextMoveDelay, placementDir, type Difficulty, type DifficultyRule } from '../../engine/solo';
 import { grabFrame } from '../../perception/depth/grab';
+import { AnchorTracker, smoothStep, toGray } from '../../perception/track/anchorTracker';
 import { recordCatch } from '../../data/collection';
 import { SpeedWatch } from '../../perception/motion/speed';
 import { SlowDown } from '../safety/Safety';
@@ -51,6 +52,11 @@ const HINT_SOUND_EVERY_MS = 6_000;
 const SNAP_PX = 44;
 const PENDING_CHECK_MS = 900;
 const SCAN_EVERY_MS = 500;
+/** Anchor tracking (ADR 0007): about six times a second, never further than this from where it was hidden. */
+const TRACK_EVERY_MS = 160;
+const TRACK_MAX_DRIFT = (20 * Math.PI) / 180;
+/** `?notrack` turns anchor tracking off, to compare on the device. */
+const TRACKING = typeof location === 'undefined' || !new URLSearchParams(location.search).has('notrack');
 
 interface Spot {
   dir: Vec3;
@@ -100,6 +106,15 @@ export function Game({ mode = 'pass' }: { mode?: GameMode }) {
   const nextMoveAt = useRef<number | null>(null);
   const [scanInfo, setScanInfo] = useState({ spots: 0, seen: [] as number[] });
   const [countdown, setCountdown] = useState<number | null>(null);
+  // Parallax and drift correction: image patches around each anchor, and where each creature started.
+  const tracker = useRef(new AnchorTracker());
+  const trackOrigin = useRef(new Map<number, { dir: Vec3; dispOffset: number | null }>());
+  const lastTrack = useRef(0);
+  const forgetTracks = (id?: number) => {
+    if (id === undefined) { tracker.current.clear(); trackOrigin.current.clear(); return; }
+    tracker.current.remove(id);
+    trackOrigin.current.delete(id);
+  };
 
   const tRef = useRef(t);
   useEffect(() => { tRef.current = t; }, [t]);
@@ -230,6 +245,7 @@ export function Game({ mode = 'pass' }: { mode?: GameMode }) {
     const last = useRound.getState().round.creatures.at(-1);
     if (!last) return;
     rendererRef.current?.removeCreature(last.id);
+    forgetTracks(last.id);
     apply(r => unhide(r, last.id));
   };
 
@@ -372,6 +388,11 @@ export function Game({ mode = 'pass' }: { mode?: GameMode }) {
         }
       }
 
+      if (TRACKING && (r.phase === 'hide' || r.phase === 'seek') && !slowRef.current && now - lastTrack.current > TRACK_EVERY_MS) {
+        lastTrack.current = now;
+        trackAnchors(renderer, pose, v.tans, v.video);
+      }
+
       // Solo: now and then a creature nobody is looking at moves to another spot the scan found (spec 4.3).
       if (mode === 'solo' && r.phase === 'seek' && r.pausedAt === null && r.seekStartedAt !== null && useSettings.getState().parent.soloMoving) {
         if (nextMoveAt.current === null) {
@@ -496,6 +517,48 @@ export function Game({ mode = 'pass' }: { mode?: GameMode }) {
       }
     };
 
+    // Each creature follows the patch of image around its anchor, so it stays on its furniture when the
+    // seeker walks (parallax) and when the gyroscope drifts (spec 8.5).
+    const trackAnchors = (
+      renderer: NonNullable<ReturnType<typeof syncView>>,
+      pose: ReturnType<typeof getOrientation>,
+      tans: ReturnType<typeof cameraTans>,
+      video: HTMLVideoElement,
+    ) => {
+      const frame = grabFrame(video, 160);
+      if (!frame) return;
+      const img = toGray(frame);
+      const map = mapRef.current;
+      const depthAtUv = (u: number, v: number) =>
+        map ? map.data[Math.min(map.height - 1, Math.floor(v * map.height)) * map.width + Math.min(map.width - 1, Math.floor(u * map.width))] ?? null : null;
+      for (const c of renderer.list) {
+        if (c.rig.mood === 'caught' || pending.current.has(c.id)) continue;
+        const p = project(toDevice(pose, c.dir), tans);
+        if (!p || p.u < 0.08 || p.u > 0.92 || p.v < 0.08 || p.v > 0.92) continue;
+        if (!tracker.current.has(c.id)) {
+          if (tracker.current.capture(c.id, img, p.u, p.v) && !trackOrigin.current.has(c.id)) {
+            const d = depthAtUv(p.u, p.v);
+            trackOrigin.current.set(c.id, { dir: c.dir, dispOffset: d === null ? null : c.disp - d });
+          }
+          continue;
+        }
+        const m = tracker.current.track(c.id, img, p);
+        if (!m) continue;
+        const u = smoothStep(p.u, m.u, 0.5, 0.01);
+        const vv = smoothStep(p.v, m.v, 0.5, 0.01);
+        const dir = toWorld(pose, ray({ u, v: vv }, tans));
+        const origin = trackOrigin.current.get(c.id);
+        // Too far from where it was hidden: the patch probably matched something else. Take a new one.
+        if (origin && angleBetween(dir, origin.dir) > TRACK_MAX_DRIFT) { tracker.current.remove(c.id); continue; }
+        renderer.setCreatureDir(c.id, dir);
+        // Walking changes the depth of the furniture too; Curioso moves its depth by itself.
+        const d = depthAtUv(m.u, m.v);
+        if (c.species !== 'curioso' && origin?.dispOffset != null && d !== null) {
+          renderer.setCreatureDisp(c.id, Math.max(0.02, smoothStep(c.disp, d + origin.dispOffset, 0.3, 0.01)));
+        }
+      }
+    };
+
     const moveOne = (
       renderer: NonNullable<ReturnType<typeof syncView>>,
       r: ReturnType<typeof useRound.getState>['round'],
@@ -518,6 +581,7 @@ export function Game({ mode = 'pass' }: { mode?: GameMode }) {
       renderer.setCreatureDir(mover.id, dir);
       renderer.setCreatureDisp(mover.id, disp);
       curious.current.delete(mover.id);
+      forgetTracks(mover.id);
       apply(state => relocate(state, mover.id, dir, disp, mover.up));
       play('place', panFor(toDevice(pose, dir)), 0.5);
       flash(tRef.current.soloMoved, 2400);
@@ -572,6 +636,7 @@ export function Game({ mode = 'pass' }: { mode?: GameMode }) {
   };
   const replayRound = () => {
     curious.current.clear();
+    forgetTracks();
     const renderer = rendererRef.current;
     renderer?.clear();
     setStills(new Map());
@@ -592,6 +657,7 @@ export function Game({ mode = 'pass' }: { mode?: GameMode }) {
     setStills(new Map());
     setTimeUpSeen(false);
     curious.current.clear();
+    forgetTracks();
     apply(() => newRound(useSettings.getState().parent.timeLimitMin * 60_000));
   };
   const endRound = () => {

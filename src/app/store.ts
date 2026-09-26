@@ -4,6 +4,7 @@ import { STRINGS, detectLang, type Lang, type Strings } from '../i18n/strings';
 import type { DepthConfig, DepthSize, LoadProgress } from '../perception/depth/types';
 import type { DepthHost } from '../perception/depth/depthService';
 import type { DeviceProbe } from '../perception/probe/probe';
+import type { Difficulty } from '../engine/solo';
 
 export type Phase = 'welcome' | 'starting' | 'download' | 'calibration' | 'home' | 'game' | 'solo' | 'collection' | 'parent' | 'break' | 'lab' | 'error';
 export type StartStep = 'motion' | 'camera' | 'probe' | 'benchmark';
@@ -48,6 +49,9 @@ interface Settings {
   setLang: (lang: Lang) => void;
   setDepthSize: (size: DepthSize) => void;
   setFov: (fovDeg: number, calibrated: boolean) => void;
+  /** Last solo difficulty picked (spec 4.3). */
+  difficulty: Difficulty;
+  setDifficulty: (difficulty: Difficulty) => void;
 }
 
 export const useSettings = create<Settings>()(
@@ -64,11 +68,13 @@ export const useSettings = create<Settings>()(
       setLang: lang => set({ lang }),
       setDepthSize: depthSize => set({ depthSize }),
       setFov: (fovDeg, calibrated) => set({ fovDeg, calibrated }),
+      difficulty: 'normal',
+      setDifficulty: difficulty => set({ difficulty }),
     }),
     {
       name: 'hidelings.settings',
       storage: createJSONStorage(() => localStorage),
-      partialize: s => ({ lang: s.lang, depthSize: s.depthSize, fovDeg: s.fovDeg, calibrated: s.calibrated, hands: s.hands, parent: s.parent }),
+      partialize: s => ({ lang: s.lang, depthSize: s.depthSize, fovDeg: s.fovDeg, calibrated: s.calibrated, hands: s.hands, parent: s.parent, difficulty: s.difficulty }),
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as Partial<Settings>;
         return { ...current, ...p, parent: { ...DEFAULT_PARENT, ...(p.parent ?? {}) } };

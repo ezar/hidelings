@@ -58,6 +58,12 @@ export function unhide(state: RoundState, id: number): RoundState {
   return { ...state, creatures: state.creatures.filter(c => c.id !== id) };
 }
 
+/** Solo mode: a creature moves to another hiding spot during the search (spec 4.3). */
+export function relocate(state: RoundState, id: number, dir: Vec3, disp: number, up: Vec3): RoundState {
+  if (state.phase !== 'seek') return state;
+  return { ...state, creatures: state.creatures.map(c => (c.id === id && c.caughtAt === null ? { ...c, dir, disp, up } : c)) };
+}
+
 export function toHandover(state: RoundState): RoundState {
   return state.phase === 'hide' && state.creatures.length ? { ...state, phase: 'handover' } : state;
 }

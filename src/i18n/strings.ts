@@ -187,6 +187,7 @@ export const es = {
   soloGo: '¡Que se escondan!',
   soloNeedMore: 'Mira un poco más a tu alrededor',
   soloMoved: 'Una criatura ha cambiado de escondite…',
+  soloHiding: '¡Se están escondiendo!',
 };
 
 export type Strings = typeof es;
@@ -378,6 +379,7 @@ export const en: Strings = {
   soloGo: 'Go and hide!',
   soloNeedMore: 'Look around a little more',
   soloMoved: 'A creature has changed hiding spot…',
+  soloHiding: 'They are hiding!',
 };
 
 export const STRINGS = { es, en };

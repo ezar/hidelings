@@ -5,11 +5,12 @@ import { SPECIES } from '../../engine/species';
 import { fill } from '../../i18n/strings';
 import { useT } from '../../app/store';
 
-export function Results({ round, stills, onReplay, onHideAgain }: {
+export function Results({ round, stills, onReplay, onHideAgain, onMenu }: {
   round: RoundState;
   stills: ReadonlyMap<number, string>;
   onReplay: () => void;
   onHideAgain: () => void;
+  onMenu: () => void;
 }) {
   const t = useT();
   const s = summarize(round);
@@ -54,6 +55,7 @@ export function Results({ round, stills, onReplay, onHideAgain }: {
       )}
 
       <div className="grow" />
+      <button className="link-btn center" onClick={onMenu}>{t.menu}</button>
       <p className="small center">{t.playAgainHelp}</p>
       <div className="row">
         <button className="btn" onClick={onHideAgain}>{t.hideAgain}</button>

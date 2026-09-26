@@ -64,6 +64,7 @@ const fragmentShader = /* glsl */ `
   uniform vec3 uColor;
   uniform float uShade;
   uniform float uRim;
+  uniform float uAlpha;
   varying vec3 vNormal;
 
   float visibility() {
@@ -89,7 +90,7 @@ const fragmentShader = /* glsl */ `
     float diffuse = 1.0 - uShade + uShade * max(dot(n, normalize(vec3(0.35, 0.65, 0.7))), 0.0);
     float rim = pow(1.0 - max(n.z, 0.0), 2.4) * uRim;
     vec3 color = uColor * diffuse + vec3(rim);
-    float alpha = vis * uFade;
+    float alpha = vis * uFade * uAlpha;
     if (alpha < 0.004) discard;
     gl_FragColor = vec4(color, alpha);
   }
@@ -102,6 +103,9 @@ export interface CreatureMaterialOptions {
   /** Strength of the fur-like rim light. */
   rim?: number;
   side?: THREE.Side;
+  /** Base opacity; with `glow`, the part is added on top like light (Brillo's halo). */
+  alpha?: number;
+  glow?: boolean;
 }
 
 export function createCreatureMaterial(uniforms: CreatureUniforms, opts: CreatureMaterialOptions): THREE.ShaderMaterial {
@@ -111,10 +115,13 @@ export function createCreatureMaterial(uniforms: CreatureUniforms, opts: Creatur
       uColor: { value: new THREE.Color(opts.color) },
       uShade: { value: opts.shade ?? 0.3 },
       uRim: { value: opts.rim ?? 0 },
+      uAlpha: { value: opts.alpha ?? 1 },
     },
     vertexShader,
     fragmentShader,
     transparent: true,
     side: opts.side ?? THREE.FrontSide,
+    blending: opts.glow ? THREE.AdditiveBlending : THREE.NormalBlending,
+    depthWrite: !opts.glow,
   });
 }

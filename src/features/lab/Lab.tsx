@@ -200,6 +200,7 @@ export function Lab() {
             <div className="row">
               <button className="btn" aria-pressed={showDepth} onClick={() => setShowDepth(v => !v)}>{t.overlay}</button>
               <button className="btn" onClick={() => set({ phase: 'calibration' })}>{t.calibrate}</button>
+              <button className="btn" onClick={() => set({ phase: 'home' })}>{t.menu}</button>
             </div>
             <div className="row">
               <button className="btn" onClick={() => void copyReport()}>{t.report}</button>

@@ -72,7 +72,7 @@ export async function startSession(): Promise<void> {
   }
 
   void requestPersistentStorage();
-  session.set({ phase: useSettings.getState().calibrated ? 'game' : 'calibration', step: null });
+  session.set({ phase: useSettings.getState().calibrated ? 'home' : 'calibration', step: null, startedAt: useSession.getState().startedAt ?? Date.now() });
 }
 
 /** Times the model at 196 px on real camera frames and picks the size (spec 7.1). */

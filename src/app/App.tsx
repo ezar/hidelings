@@ -1,11 +1,19 @@
 import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect } from 'react';
+import { setMuted } from '../audio/audio';
+import { Collection } from '../features/collection/Collection';
+import { Home } from '../features/home/Home';
+import { Parent } from '../features/parent/Parent';
+import { Break } from '../features/safety/Safety';
+import { useRound } from '../features/game/roundStore';
+import { sessionOver } from '../perception/motion/speed';
 import { Calibration } from '../features/calibration/Calibration';
 import { Game } from '../features/game/Game';
 import { Lab } from '../features/lab/Lab';
 import { Download } from '../features/onboarding/Download';
 import { ErrorScreen } from '../features/onboarding/ErrorScreen';
 import { Welcome } from '../features/onboarding/Welcome';
-import { useSession, useT } from './store';
+import { useSession, useSettings, useT } from './store';
 
 function LandscapeBlocker() {
   const t = useT();
@@ -26,7 +34,28 @@ function LandscapeBlocker() {
 
 export function App() {
   const phase = useSession(s => s.phase);
+  const sound = useSettings(s => s.parent.sound);
+
+  useEffect(() => setMuted(!sound), [sound]);
+
+  // Session limit (spec 4.5, 12): after the parent's limit, a break screen, never in the middle of a search.
+  useEffect(() => {
+    const id = setInterval(() => {
+      const { startedAt, phase: current, set } = useSession.getState();
+      const limit = useSettings.getState().parent.sessionLimitMin;
+      if (!startedAt || !sessionOver(startedAt, Date.now(), limit)) return;
+      if (!['home', 'game', 'solo', 'collection'].includes(current)) return;
+      if ((current === 'game' || current === 'solo') && useRound.getState().round.phase === 'seek') return;
+      set({ phase: 'break' });
+    }, 10_000);
+    return () => clearInterval(id);
+  }, []);
+
   const screen =
+    phase === 'home' ? <Home /> :
+    phase === 'collection' ? <Collection /> :
+    phase === 'parent' ? <Parent /> :
+    phase === 'break' ? <Break /> :
     phase === 'game' ? <Game /> :
     phase === 'lab' ? <Lab /> :
     phase === 'calibration' ? <Calibration /> :

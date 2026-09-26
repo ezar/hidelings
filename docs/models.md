@@ -12,7 +12,8 @@ Every model and asset the project loads or bundles, with its license. The projec
 | Three.js | 3D creatures and occlusion shader | npm (bundled) | MIT |
 | Fredoka font | Display type and counters | Google Fonts | SIL Open Font License 1.1 |
 | Nunito font | UI and body text (design, from M1) | Google Fonts | SIL Open Font License 1.1 |
-| App icon and creatures (Pompón, Fideo, Tímido) | Icons, onboarding, creatures | Original, built in code: `public/icon.svg`, `src/render/Pompon.tsx`, `src/render/creatures3d.ts` | MIT (this project) |
+| App icon and creatures (all six species) | Icons, menus, collection, creatures | Original, built in code: `public/icon.svg`, `src/render/Pompon.tsx`, `src/render/Creature2D.tsx`, `src/render/creatures3d.ts` | MIT (this project) |
+| Dexie (4.x) | Collection storage in IndexedDB | npm (bundled) | Apache 2.0 |
 | Sounds | Hints, reactions, catches | Synthesized with Web Audio in `src/audio/audio.ts` | MIT (this project) |
 
 Not allowed: Depth Anything V2 Base and Large (CC-BY-NC 4.0).

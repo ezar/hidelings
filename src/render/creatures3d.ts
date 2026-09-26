@@ -12,11 +12,15 @@ export type Mood = 'tuck' | 'idle' | 'near' | 'caught' | 'retreat';
 export interface CreatureRig {
   /** Everything that moves with the creature, inside the anchor. */
   group: THREE.Group;
-  /** Parts drawn only in the colour pass (the ink outline). */
+  /** Parts drawn only in the colour pass (ink outlines, Brillo's glow), not in the visibility pass. */
   outline: THREE.Object3D[];
   eyes: THREE.Object3D[];
   /** The "!" shown when nearly found. */
   alert: THREE.Object3D;
+  /** Dormilón's floating Zzz. */
+  zzz: THREE.Object3D[];
+  /** Asleep: eyes closed while idle (Dormilón). */
+  sleeper: boolean;
   seed: number;
   mood: Mood;
   moodAt: number;
@@ -45,6 +49,8 @@ interface Parts {
   group: THREE.Group;
   outline: THREE.Object3D[];
   eyes: THREE.Object3D[];
+  zzz: THREE.Object3D[];
+  sleeper: boolean;
 }
 
 function addBody(p: Parts, geo: THREE.BufferGeometry, color: THREE.ColorRepresentation, outline = 1.06) {
@@ -156,6 +162,101 @@ function buildTimido(p: Parts) {
   addMouth(p, -0.3, 0.84, 0.8);
 }
 
+function buildCurioso(p: Parts) {
+  const geo = new THREE.SphereGeometry(1, 48, 32);
+  // A pear: wider at the bottom.
+  const pos = geo.attributes.position as THREE.BufferAttribute;
+  for (let i = 0; i < pos.count; i++) {
+    const y = pos.getY(i);
+    const k = 1 + 0.18 * (-y);
+    pos.setXYZ(i, pos.getX(i) * k, y * 1.05, pos.getZ(i) * k);
+  }
+  geo.computeVertexNormals();
+  addBody(p, geo, SPECIES.curioso.color);
+  const ink = createCreatureMaterial(p.uniforms, { color: INK, shade: 0 });
+  const stalk = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.55, 8), ink);
+  stalk.position.set(0.12, 1.25, 0);
+  stalk.rotation.z = -0.35;
+  const bulb = new THREE.Mesh(SPHERE, createCreatureMaterial(p.uniforms, { color: HONEY, shade: 0.2, rim: 0.3 }));
+  bulb.scale.setScalar(0.14);
+  bulb.position.set(0.23, 1.52, 0);
+  p.group.add(stalk, bulb);
+  // One eye a little bigger than the other: curious.
+  addEyes(p, 0.36, 0.2, 0.82, 1.1);
+  p.eyes[1]!.scale.multiplyScalar(0.82);
+  addCheeks(p, 0.55, -0.15, 0.8);
+  addMouth(p, -0.25, 0.9);
+}
+
+function buildDormilon(p: Parts) {
+  const geo = new THREE.SphereGeometry(1, 48, 32);
+  // A mochi: flat bottom, soft dome.
+  const pos = geo.attributes.position as THREE.BufferAttribute;
+  for (let i = 0; i < pos.count; i++) {
+    const y = pos.getY(i);
+    pos.setXYZ(i, pos.getX(i) * 1.25, y < -0.3 ? -0.3 + (y + 0.3) * 0.25 : y * 0.8, pos.getZ(i) * 1.05);
+  }
+  geo.computeVertexNormals();
+  addBody(p, geo, SPECIES.dormilon.color);
+  const cap = new THREE.Mesh(new THREE.ConeGeometry(0.45, 0.9, 20), createCreatureMaterial(p.uniforms, { color: 0x5b4bdb, shade: 0.3 }));
+  cap.position.set(0.25, 0.95, 0);
+  cap.rotation.z = -0.5;
+  const pompom = new THREE.Mesh(SPHERE, createCreatureMaterial(p.uniforms, { color: 0xffffff, shade: 0.2 }));
+  pompom.scale.setScalar(0.13);
+  pompom.position.set(0.62, 1.3, 0);
+  p.group.add(cap, pompom);
+  addEyes(p, 0.42, 0.05, 0.86, 0.9);
+  addCheeks(p, 0.66, -0.12, 0.8);
+  addMouth(p, -0.16, 0.95, 0.7);
+  // Three "z" letters built from bars, floating up and away while asleep.
+  const ink = createCreatureMaterial(p.uniforms, { color: INK, shade: 0 });
+  const bar = new THREE.BoxGeometry(0.28, 0.05, 0.02);
+  for (let i = 0; i < 3; i++) {
+    const z = new THREE.Group();
+    const top = new THREE.Mesh(bar, ink);
+    top.position.y = 0.12;
+    const bottom = new THREE.Mesh(bar, ink);
+    bottom.position.y = -0.12;
+    const diag = new THREE.Mesh(bar, ink);
+    diag.rotation.z = Math.atan2(0.24, -0.28);
+    diag.scale.x = 1.3;
+    z.add(top, bottom, diag);
+    z.userData.phase = i / 3;
+    for (const m of z.children) m.renderOrder = 3;
+    p.zzz.push(z);
+    p.group.add(z);
+  }
+  p.sleeper = true;
+}
+
+/** Brillo's body: a soft five-pointed star. */
+function starBody(): THREE.BufferGeometry {
+  const geo = new THREE.SphereGeometry(1, 64, 32);
+  const pos = geo.attributes.position as THREE.BufferAttribute;
+  const v = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i);
+    const a = Math.atan2(v.y, v.x);
+    const lobe = 1 + 0.28 * Math.max(0, Math.cos(5 * (a - Math.PI / 2)));
+    pos.setXYZ(i, v.x * lobe, v.y * lobe, v.z * 0.8);
+  }
+  geo.computeVertexNormals();
+  return geo;
+}
+
+function buildBrillo(p: Parts) {
+  const halo = new THREE.Mesh(SPHERE, createCreatureMaterial(p.uniforms, { color: 0xfff3b0, shade: 0, alpha: 0.28, glow: true }));
+  halo.scale.setScalar(1.9);
+  halo.renderOrder = -1;
+  p.group.add(halo);
+  p.outline.push(halo); // colour pass only: the glow does not count towards visibility
+  addBody(p, starBody(), SPECIES.brillo.color);
+  (p.group.children.at(-1) as THREE.Mesh).material = createCreatureMaterial(p.uniforms, { color: SPECIES.brillo.color, shade: 0.1, rim: 0.8 });
+  addEyes(p, 0.28, 0.1, 0.78, 0.9);
+  addCheeks(p, 0.48, -0.15, 0.72, 0.9);
+  addMouth(p, -0.22, 0.8, 0.8);
+}
+
 function buildAlert(uniforms: CreatureUniforms): THREE.Group {
   const alert = new THREE.Group();
   const honey = createCreatureMaterial(uniforms, { color: HONEY, shade: 0 });
@@ -170,10 +271,17 @@ function buildAlert(uniforms: CreatureUniforms): THREE.Group {
   return alert;
 }
 
-const BUILDERS: Record<SpeciesId, (p: Parts) => void> = { pompon: buildPompon, fideo: buildFideo, timido: buildTimido };
+const BUILDERS: Record<SpeciesId, (p: Parts) => void> = {
+  pompon: buildPompon,
+  fideo: buildFideo,
+  timido: buildTimido,
+  curioso: buildCurioso,
+  dormilon: buildDormilon,
+  brillo: buildBrillo,
+};
 
 export function createCreature(species: SpeciesId, uniforms: CreatureUniforms, now: number): CreatureRig {
-  const parts: Parts = { uniforms, group: new THREE.Group(), outline: [], eyes: [] };
+  const parts: Parts = { uniforms, group: new THREE.Group(), outline: [], eyes: [], zzz: [], sleeper: false };
   BUILDERS[species](parts);
   const alert = buildAlert(uniforms);
   parts.group.add(alert);
@@ -247,10 +355,18 @@ export function animateCreature(rig: CreatureRig, now: number, reducedMotion = f
 
   rig.group.scale.set(sx, sy, 1);
   rig.group.position.set(px, py, 0);
-  const blinking = rig.mood === 'idle' && t % 4.3 < 0.12;
+  const asleep = rig.sleeper && (rig.mood === 'idle' || rig.mood === 'tuck');
+  const blinking = asleep || (rig.mood === 'idle' && t % 4.3 < 0.12);
   for (const eye of rig.eyes) {
     const base = eye.userData.baseScale ?? (eye.userData.baseScale = eye.scale.x);
     eye.scale.set(base * eyeScale, base * eyeScale * (blinking ? 0.12 : 1), base);
+  }
+  for (const z of rig.zzz) {
+    // Each z rises and grows over 2.4 s, staggered, only while asleep.
+    const k = (t / 2.4 + (z.userData.phase as number)) % 1;
+    z.visible = asleep && !reducedMotion;
+    z.position.set(0.8 + 0.35 * k, 0.9 + 0.9 * k, 0.2);
+    z.scale.setScalar(0.4 + 0.6 * k);
   }
   return fade;
 }

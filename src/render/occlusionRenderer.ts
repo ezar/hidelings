@@ -153,6 +153,25 @@ export class OcclusionRenderer {
     return creature;
   }
 
+  /** Moves a creature's anchor (solo moves, re-anchoring). Keeps it facing the player upright. */
+  setCreatureDir(id: number, dir: Vec3) {
+    const c = this.creatures.find(x => x.id === id);
+    if (!c) return;
+    const len = Math.hypot(dir[0], dir[1], dir[2]) || 1;
+    c.dir = [dir[0] / len, dir[1] / len, dir[2] / len];
+    c.anchor.position.set(c.dir[0] * ANCHOR_DISTANCE, c.dir[1] * ANCHOR_DISTANCE, c.dir[2] * ANCHOR_DISTANCE);
+    c.anchor.lookAt(0, 0, 0);
+  }
+
+  /** Changes how near a creature sits (Curioso creeping closer): its occlusion depth and its size. */
+  setCreatureDisp(id: number, disp: number) {
+    const c = this.creatures.find(x => x.id === id);
+    if (!c) return;
+    c.disp = disp;
+    c.uniforms.uDisp.value = disp;
+    c.anchor.scale.setScalar(creatureRadius(disp, this.tans) * SPECIES[c.species].size);
+  }
+
   setMood(id: number, mood: Mood, now = performance.now()) {
     const c = this.creatures.find(x => x.id === id);
     if (c) setMood(c.rig, mood, now);

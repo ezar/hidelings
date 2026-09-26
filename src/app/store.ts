@@ -5,8 +5,31 @@ import type { DepthConfig, DepthSize, LoadProgress } from '../perception/depth/t
 import type { DepthHost } from '../perception/depth/depthService';
 import type { DeviceProbe } from '../perception/probe/probe';
 
-export type Phase = 'welcome' | 'starting' | 'download' | 'calibration' | 'game' | 'lab' | 'error';
+export type Phase = 'welcome' | 'starting' | 'download' | 'calibration' | 'home' | 'game' | 'solo' | 'collection' | 'parent' | 'break' | 'lab' | 'error';
 export type StartStep = 'motion' | 'camera' | 'probe' | 'benchmark';
+
+export interface ParentSettings {
+  /** Round time limit in minutes (spec 5). */
+  timeLimitMin: number;
+  /** Seconds without a catch before the first hint (spec 4.2). */
+  hintDelaySec: number;
+  /** Solo creatures may move between hiding spots (spec 4.3). */
+  soloMoving: boolean;
+  sound: boolean;
+  /** Minutes of play before a break screen; 0 turns it off (spec 12). */
+  sessionLimitMin: number;
+  /** Name of the room being played, kept with each catch. Empty means the default name. */
+  room: string;
+}
+
+export const DEFAULT_PARENT: ParentSettings = {
+  timeLimitMin: 5,
+  hintDelaySec: 60,
+  soloMoving: true,
+  sound: true,
+  sessionLimitMin: 20,
+  room: '',
+};
 
 /** Settings kept on the device between sessions. */
 interface Settings {
@@ -19,6 +42,9 @@ interface Settings {
   /** Catch by pinching in front of the camera (spec 7.3). */
   hands: boolean;
   setHands: (hands: boolean) => void;
+  /** Parent area (spec 4.5). */
+  parent: ParentSettings;
+  setParent: (patch: Partial<ParentSettings>) => void;
   setLang: (lang: Lang) => void;
   setDepthSize: (size: DepthSize) => void;
   setFov: (fovDeg: number, calibrated: boolean) => void;
@@ -33,6 +59,8 @@ export const useSettings = create<Settings>()(
       calibrated: false,
       hands: false,
       setHands: hands => set({ hands }),
+      parent: DEFAULT_PARENT,
+      setParent: patch => set(s => ({ parent: { ...s.parent, ...patch } })),
       setLang: lang => set({ lang }),
       setDepthSize: depthSize => set({ depthSize }),
       setFov: (fovDeg, calibrated) => set({ fovDeg, calibrated }),
@@ -40,7 +68,11 @@ export const useSettings = create<Settings>()(
     {
       name: 'hidelings.settings',
       storage: createJSONStorage(() => localStorage),
-      partialize: s => ({ lang: s.lang, depthSize: s.depthSize, fovDeg: s.fovDeg, calibrated: s.calibrated, hands: s.hands }),
+      partialize: s => ({ lang: s.lang, depthSize: s.depthSize, fovDeg: s.fovDeg, calibrated: s.calibrated, hands: s.hands, parent: s.parent }),
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<Settings>;
+        return { ...current, ...p, parent: { ...DEFAULT_PARENT, ...(p.parent ?? {}) } };
+      },
     },
   ),
 );
@@ -56,6 +88,8 @@ interface Session {
   motion: boolean;
   error: 'camera' | 'model' | null;
   errorDetail: string;
+  /** When play started in this session, for the parent's session limit. */
+  startedAt: number | null;
   set: (patch: Partial<Omit<Session, 'set'>>) => void;
 }
 
@@ -69,6 +103,7 @@ export const useSession = create<Session>()(set => ({
   motion: false,
   error: null,
   errorDetail: '',
+  startedAt: null,
   set: patch => set(patch),
 }));
 

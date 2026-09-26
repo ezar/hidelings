@@ -1,5 +1,6 @@
-// Pass-and-play hide and seek (spec 4.2). One camera stage stays alive through the whole round, so the
-// creatures and the depth loop survive the handover; each phase adds its own HUD on top.
+// Hide and seek: pass-and-play (spec 4.2) and solo (spec 4.3). One camera stage stays alive through the whole
+// round, so the creatures and the depth loop survive the handover; each phase adds its own HUD on top. In solo
+// mode the hiding phase is the room scan, and the game hides the creatures itself.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { play } from '../../audio/audio';
 import {
@@ -12,6 +13,7 @@ import {
   hide,
   newRound,
   pause,
+  relocate,
   remaining,
   replay,
   resume,
@@ -22,7 +24,9 @@ import {
   type CatchMethod,
 } from '../../engine/round';
 import { NearlyFoundTracker, RetreatTracker, hiddenEnough, hintStage, panFor, pickCatchTarget } from '../../engine/rules';
-import { COMMON_SPECIES, SPECIES, speciesForSpot, type SpeciesId, type SpotKind } from '../../engine/species';
+import { COMMON_SPECIES, SPECIES, availableSpecies, speciesForSpot, type SpeciesId, type SpotKind } from '../../engine/species';
+import { DIFFICULTY, RoomScan, angleBetween, hintGain, meanLuma, moveTarget, nextMoveDelay, placementDir, type Difficulty, type DifficultyRule } from '../../engine/solo';
+import { grabFrame } from '../../perception/depth/grab';
 import { recordCatch } from '../../data/collection';
 import { SpeedWatch } from '../../perception/motion/speed';
 import { SlowDown } from '../safety/Safety';
@@ -30,7 +34,7 @@ import { fill } from '../../i18n/strings';
 import type { PosedDepthMap } from '../../perception/depth/temporal';
 import { detectHands, handsReady, loadHands } from '../../perception/hands/landmarker';
 import { PinchStarts, fingerPairs, type FingerPair } from '../../perception/hands/pinch';
-import { getOrientation } from '../../perception/motion/orientation';
+import { getOrientation, isOrientationActive } from '../../perception/motion/orientation';
 import { cameraTans, project, ray, toDevice, toWorld, type Vec3 } from '../../perception/motion/rotation';
 import { findHidingSpots } from '../../perception/spots/spots';
 import { coverMapping, screenToVideo, videoToScreen, visibleVideoRect } from '../../render/viewMapping';
@@ -40,11 +44,13 @@ import { useDepthLoop } from '../stage/useDepthLoop';
 import { useStage } from '../stage/useStage';
 import { Curtain } from './Curtain';
 import { Results } from './Results';
+import { SoloScanHud } from './SoloScan';
 import { useRound } from './roundStore';
 
 const HINT_SOUND_EVERY_MS = 6_000;
 const SNAP_PX = 44;
 const PENDING_CHECK_MS = 900;
+const SCAN_EVERY_MS = 500;
 
 interface Spot {
   dir: Vec3;
@@ -54,7 +60,9 @@ interface Spot {
 
 type SpeciesChoice = SpeciesId | 'auto';
 
-export function Game() {
+export type GameMode = 'pass' | 'solo';
+
+export function Game({ mode = 'pass' }: { mode?: GameMode }) {
   const t = useT();
   const setSession = useSession(s => s.set);
   const { lang, setLang, hands, setHands } = useSettings();
@@ -86,6 +94,12 @@ export function Game() {
   /** "Listo" was pressed while some placements were still waiting for their visibility check. */
   const wantHandover = useRef(false);
   const slowRef = useRef(false);
+  // Solo mode: what the room scan found, the rule of the current round and when a creature moves next.
+  const scan = useRef(new RoomScan());
+  const soloRule = useRef<DifficultyRule>(DIFFICULTY.normal);
+  const nextMoveAt = useRef<number | null>(null);
+  const [scanInfo, setScanInfo] = useState({ spots: 0, seen: [] as number[] });
+  const [countdown, setCountdown] = useState<number | null>(null);
 
   const tRef = useRef(t);
   useEffect(() => { tRef.current = t; }, [t]);
@@ -106,17 +120,36 @@ export function Game() {
   const onMap = useCallback((map: PosedDepthMap, video: HTMLVideoElement) => {
     if (useRound.getState().round.phase !== 'hide') return;
     const now = performance.now();
-    if (now - lastSpotScan.current < 1000) return;
+    if (now - lastSpotScan.current < (mode === 'solo' ? SCAN_EVERY_MS : 1000)) return;
     lastSpotScan.current = now;
     const tans = cameraTans(useSettings.getState().fovDeg, video.videoWidth, video.videoHeight);
     const canvas = glRef.current;
     const bounds = canvas ? visibleVideoRect(coverMapping(canvas.clientWidth, canvas.clientHeight, video.videoWidth, video.videoHeight)) : undefined;
+    if (mode === 'solo') {
+      // Room scan (spec 4.3, 7.2): spots from every direction, merged by world direction, with the light.
+      const frame = grabFrame(video, 64);
+      const lumaAt = (u: number, v: number) => (frame ? meanLuma(frame.data, frame.width, frame.height, { u, v, r: 0.04 }) : null);
+      const up = toWorld(map.pose, [0, 1, 0]);
+      scan.current.addView(toWorld(map.pose, [0, 0, -1]), frame ? meanLuma(frame.data, frame.width, frame.height) : null);
+      scan.current.addSpots(findHidingSpots(map, 6, { bounds }).map(s => ({
+        dir: toWorld(map.pose, ray({ u: s.u, v: s.v }, tans)),
+        edgeDir: toWorld(map.pose, ray({ u: s.edgeU, v: s.edgeV }, tans)),
+        disp: s.disp,
+        score: s.score,
+        kind: s.kind,
+        luma: lumaAt(s.u, s.v),
+        up,
+      })));
+      spotsRef.current = scan.current.spots.map(s => ({ dir: s.dir, disp: s.disp, kind: s.kind }));
+      setScanInfo({ spots: scan.current.spots.length, seen: [...scan.current.seen] });
+      return;
+    }
     spotsRef.current = findHidingSpots(map, 6, { bounds }).map(s => ({
       dir: toWorld(map.pose, ray({ u: s.u, v: s.v }, tans)),
       disp: s.disp,
       kind: s.kind,
     }));
-  }, []);
+  }, [mode]);
   const { mapRef } = useDepthLoop(videoRef, rendererRef, onMap);
 
   const view = () => {
@@ -136,7 +169,7 @@ export function Game() {
   const place = (dir: Vec3, disp: number, kind: SpotKind | null, insisted: boolean, now: number, auto = false) => {
     const renderer = rendererRef.current;
     if (!renderer || useRound.getState().round.creatures.length >= MAX_CREATURES) return;
-    const species = choice === 'auto' ? speciesForSpot(kind, Math.random()) : choice;
+    const species = choice === 'auto' ? speciesForSpot(kind, Math.random(), COMMON_SPECIES) : choice;
     const up = toWorld(getOrientation(), [0, 1, 0]);
     const c = renderer.addCreature(dir, disp, up, species, now);
     apply(r => hide(r, { id: c.id, species, dir, disp, up }));
@@ -200,6 +233,45 @@ export function Game() {
     apply(r => unhide(r, last.id));
   };
 
+  // Solo: the game hides the creatures behind the best spots, spread around the player, while the screen
+  // counts down so nobody sees where they go.
+  const soloGo = (difficulty: Difficulty) => {
+    const renderer = rendererRef.current;
+    if (!renderer) return;
+    const rule = DIFFICULTY[difficulty];
+    const room = scan.current;
+    const picks = room.pick(rule.count, Math.random);
+    if (!picks.length) { flash(t.hideNoSpots); return; }
+    soloRule.current = rule;
+    nextMoveAt.current = null;
+    let pool = availableSpecies(room.roomLuma());
+    const now = performance.now();
+    for (const p of picks) {
+      const species = speciesForSpot({ kind: p.kind, dark: room.isDark(p) }, Math.random(), pool);
+      // Brillo is rare: at most one per round.
+      if (species === 'brillo') pool = pool.filter(id => id !== 'brillo');
+      const dir = placementDir(p, rule.peek);
+      const disp = Math.max(0.02, p.disp - 0.02);
+      const c = renderer.addCreature(dir, disp, p.up, species, now);
+      apply(r => hide(r, { id: c.id, species, dir, disp, up: p.up }));
+    }
+    log(`Solo: hid ${picks.length} of ${rule.count} (${room.spots.length} spots, ${room.coverage} directions, luma ${Math.round(room.roomLuma() ?? -1)})`);
+    setCountdown(3);
+  };
+
+  useEffect(() => {
+    if (countdown === null) return;
+    const id = window.setTimeout(() => {
+      if (countdown > 1) { setCountdown(countdown - 1); return; }
+      setCountdown(null);
+      nearly.current = new NearlyFoundTracker();
+      lastHintSound.current = 0;
+      apply(toHandover);
+      apply(toSeek);
+    }, 1000);
+    return () => window.clearTimeout(id);
+  }, [countdown, apply]);
+
   // ---------- Seeking ----------
 
   const tryCatch = (x: number, y: number, method: CatchMethod) => {
@@ -216,7 +288,7 @@ export function Game() {
     window.setTimeout(() => rendererRef.current?.removeCreature(id), 500);
     apply(state => catchCreature(state, id, performance.now(), visible, method));
     const { parent } = useSettings.getState();
-    recordCatch({ species: c.species, at: Date.now(), room: parent.room || tRef.current.defaultRoom, mode: 'pass', method, visible })
+    recordCatch({ species: c.species, at: Date.now(), room: parent.room || tRef.current.defaultRoom, mode, method, visible })
       .then(isNew => { if (isNew) flash(fill(tRef.current.newSpecies, { name: SPECIES[c.species].name }), 2600); })
       .catch(e => log(`Collection error: ${String(e)}`));
     play('catch');
@@ -297,6 +369,18 @@ export function Game() {
             renderer.setMood(c.id, 'near', now);
             play('near', panFor(toDevice(pose, c.dir)));
           }
+        }
+      }
+
+      // Solo: now and then a creature nobody is looking at moves to another spot the scan found (spec 4.3).
+      if (mode === 'solo' && r.phase === 'seek' && r.pausedAt === null && r.seekStartedAt !== null && useSettings.getState().parent.soloMoving) {
+        if (nextMoveAt.current === null) {
+          const d = nextMoveDelay(soloRule.current, Math.random);
+          nextMoveAt.current = d === null ? Infinity : now + d;
+        } else if (now >= nextMoveAt.current) {
+          const d = nextMoveDelay(soloRule.current, Math.random);
+          nextMoveAt.current = d === null ? Infinity : now + d;
+          moveOne(renderer, r, pose, v.tans, now);
         }
       }
 
@@ -393,7 +477,8 @@ export function Game() {
         const target = nearestUncaught(pose);
         if (stage >= 1 && target && now - lastHintSound.current > HINT_SOUND_EVERY_MS) {
           lastHintSound.current = now;
-          play('hint', panFor(toDevice(pose, target)));
+          // Spatial hint (spec 10): panned towards the creature, louder as it comes into view.
+          play('hint', panFor(toDevice(pose, target)), hintGain(angleBetween(toDevice(pose, target), [0, 0, -1])));
         }
         if (stage >= 2 && target) drawEdgeArrow(ctx, w, h, toDevice(pose, target), tans, mapping);
       }
@@ -409,6 +494,34 @@ export function Game() {
           ctx.setLineDash([]);
         }
       }
+    };
+
+    const moveOne = (
+      renderer: NonNullable<ReturnType<typeof syncView>>,
+      r: ReturnType<typeof useRound.getState>['round'],
+      pose: ReturnType<typeof getOrientation>,
+      tans: ReturnType<typeof cameraTans>,
+      now: number,
+    ) => {
+      const inView = (dir: Vec3) => {
+        const p = project(toDevice(pose, dir), tans);
+        return !!p && p.u > -0.15 && p.u < 1.15 && p.v > -0.15 && p.v < 1.15;
+      };
+      const uncaught = r.creatures.filter(c => c.caughtAt === null);
+      const movers = uncaught.filter(c => !inView(c.dir));
+      const mover = movers[Math.floor(Math.random() * movers.length)];
+      if (!mover) return;
+      const target = moveTarget(scan.current.spots, uncaught.map(c => c.dir), inView, Math.random);
+      if (!target) return;
+      const dir = placementDir(target, soloRule.current.peek);
+      const disp = Math.max(0.02, target.disp - 0.02);
+      renderer.setCreatureDir(mover.id, dir);
+      renderer.setCreatureDisp(mover.id, disp);
+      curious.current.delete(mover.id);
+      apply(state => relocate(state, mover.id, dir, disp, mover.up));
+      play('place', panFor(toDevice(pose, dir)), 0.5);
+      flash(tRef.current.soloMoved, 2400);
+      log(`Solo: ${mover.species} moved at ${Math.round(now / 1000)} s`);
     };
 
     const nearestUncaught = (pose: ReturnType<typeof getOrientation>): Vec3 | null => {
@@ -466,6 +579,13 @@ export function Game() {
     apply(replay);
     const now = performance.now();
     for (const c of useRound.getState().round.creatures) renderer?.addCreature(c.dir, c.disp, c.up, c.species, now, c.id);
+    if (mode === 'solo') {
+      // Nobody needs to look away: straight back to seeking.
+      nextMoveAt.current = null;
+      nearly.current = new NearlyFoundTracker();
+      lastHintSound.current = 0;
+      apply(toSeek);
+    }
   };
   const hideAgain = () => {
     rendererRef.current?.clear();
@@ -488,7 +608,7 @@ export function Game() {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    if (round.phase === 'hide') hideAt(x, y);
+    if (round.phase === 'hide' && mode === 'pass') hideAt(x, y);
     else if (round.phase === 'seek') tryCatch(x, y, 'tap');
   };
 
@@ -504,7 +624,18 @@ export function Game() {
       <canvas ref={glRef} onPointerDown={onTap} />
       <canvas ref={overlayRef} style={{ pointerEvents: 'none' }} />
 
-      {round.phase === 'hide' && (
+      {round.phase === 'hide' && mode === 'solo' && (
+        <SoloScanHud
+          spots={scanInfo.spots}
+          seen={scanInfo.seen}
+          needCoverage={isOrientationActive()}
+          countdown={countdown}
+          onGo={soloGo}
+          onMenu={() => setSession({ phase: 'home' })}
+        />
+      )}
+
+      {round.phase === 'hide' && mode === 'pass' && (
         <>
           <div className="hud-top">
             <div className="row" style={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>

@@ -27,8 +27,8 @@ const NOTES: Record<Sound, { freqs: number[]; step: number; type: OscillatorType
   place: { freqs: [520, 780], step: 0.06, type: 'sine', gain: 0.15 },
 };
 
-/** Plays a sound, panned -1 (left) .. 1 (right). */
-export function play(sound: Sound, pan = 0) {
+/** Plays a sound, panned -1 (left) .. 1 (right), at `volume` (0..1) of its normal loudness. */
+export function play(sound: Sound, pan = 0, volume = 1) {
   if (muted || !ctx || ctx.state !== 'running') return;
   const { freqs, step, type, gain } = NOTES[sound];
   const start = ctx.currentTime + 0.01;
@@ -41,7 +41,7 @@ export function play(sound: Sound, pan = 0) {
     osc.type = type;
     osc.frequency.setValueAtTime(f, start + i * step);
     g.gain.setValueAtTime(0, start + i * step);
-    g.gain.linearRampToValueAtTime(gain, start + i * step + 0.01);
+    g.gain.linearRampToValueAtTime(gain * Math.max(0.05, Math.min(1, volume)), start + i * step + 0.01);
     g.gain.exponentialRampToValueAtTime(0.001, start + i * step + step * 1.6);
     osc.connect(g).connect(panner);
     osc.start(start + i * step);

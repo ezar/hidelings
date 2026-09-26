@@ -11,6 +11,9 @@ export interface HidingSpot {
   /** Depth difference to the nearer neighbour; higher is a better hiding place. */
   score: number;
   kind: SpotKind;
+  /** Where the nearer object is, in normalized coordinates: moving towards it hides more. */
+  edgeU: number;
+  edgeV: number;
 }
 
 export interface SpotOptions {
@@ -67,6 +70,8 @@ export function findHidingSpots(map: DepthMap, count: number, opts: SpotOptions 
         disp: d,
         score: best,
         kind: Math.abs(bestProbe[1]) > Math.abs(bestProbe[0]) || bestProbe[0] === 0 ? 'horizontal' : 'vertical',
+        edgeU: (x + bestProbe[0] + 0.5) / w,
+        edgeV: (y + bestProbe[1] + 0.5) / h,
       });
     }
   }

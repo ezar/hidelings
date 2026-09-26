@@ -56,7 +56,8 @@ export function App() {
     phase === 'collection' ? <Collection /> :
     phase === 'parent' ? <Parent /> :
     phase === 'break' ? <Break /> :
-    phase === 'game' ? <Game /> :
+    phase === 'game' ? <Game mode="pass" /> :
+    phase === 'solo' ? <Game mode="solo" /> :
     phase === 'lab' ? <Lab /> :
     phase === 'calibration' ? <Calibration /> :
     phase === 'download' ? <Download /> :

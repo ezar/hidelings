@@ -43,6 +43,17 @@ export function Home() {
         </span>
       </button>
 
+      <button className="mode-card mode-card-solo" onClick={() => play('solo')}>
+        <span className="mode-art" aria-hidden="true">
+          <Creature2D species="curioso" size={84} />
+          <Creature2D species="timido" size={70} />
+        </span>
+        <span className="mode-text">
+          <b>{t.modeSolo}</b>
+          <span>{t.modeSoloHelp}</span>
+        </span>
+      </button>
+
       <button className="btn btn-big" onClick={() => set({ phase: 'collection' })}>
         {t.collection}{catches ? ` · ${catches}` : ''}
       </button>
